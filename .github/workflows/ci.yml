@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        run: shellcheck aimux .githooks/pre-commit .githooks/pre-push
+
+      - name: Secret scan
+        run: |
+          pattern='AKIA[0-9A-Z]{16}|(aws_secret_access_key)\s*[=:]\s*\S+|(api[_-]?key|apikey)\s*[=:]\s*['"'"'""]?\S{16,}|(secret|password|passwd|token)\s*[=:]\s*['"'"'""]?\S{8,}|ghp_[A-Za-z0-9_]{36,}|-----BEGIN\s+(RSA|DSA|EC|OPENSSH)?\s*PRIVATE KEY-----|xox[baprs]-[0-9a-zA-Z-]+|AIza[0-9A-Za-z\-_]{35}'
+          matches=$(grep -r -n -i -E "$pattern" --include='*' \
+            --exclude-dir=.git --exclude-dir=.githooks \
+            --exclude='ci.yml' . || true)
+          if [[ -n "$matches" ]]; then
+            echo "::error::Potential secrets detected:"
+            echo "$matches"
+            exit 1
+          fi
+          echo "No secrets found."
+
+      - name: Check required files
+        run: |
+          test -f LICENSE   || { echo "::error::LICENSE is missing"; exit 1; }
+          test -f README.md || { echo "::error::README.md is missing"; exit 1; }
+
+      - name: Run tests
+        run: |
+          if [[ -d tests ]]; then
+            for t in tests/test_*; do
+              [[ -x "$t" ]] && echo "Running $t..." && "$t"
+            done
+          else
+            echo "No tests/ directory found, skipping."
+          fi

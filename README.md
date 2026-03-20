@@ -88,6 +88,15 @@ AIMUX_PANE_RIGHT="aider"
 AIMUX_PANE_TOP_LEFT="" AIMUX_PANE_BOTTOM_LEFT="" AIMUX_PANE_RIGHT="claude" aimux new focus
 ```
 
+## Contributing
+
+```bash
+git clone https://github.com/hirokimry/aimux.git
+cd aimux
+make setup-hooks   # Enable git hooks
+make check         # Run lint + tests locally
+```
+
 ## Requirements
 
 - [tmux](https://github.com/tmux/tmux) (>= 3.0)
