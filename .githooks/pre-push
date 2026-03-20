@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# aimux pre-push hook
+# vibemux pre-push hook
 # Comprehensive checks on push diff range
 
 RED='\033[0;31m'
@@ -85,7 +85,7 @@ done
 # ── Check: shellcheck ────────────────────────────────────────
 if command -v shellcheck &>/dev/null; then
   shell_files=""
-  for file in aimux .githooks/pre-commit .githooks/pre-push; do
+  for file in vibemux .githooks/pre-commit .githooks/pre-push; do
     [[ -f "$file" ]] && shell_files+="$file "
   done
   while IFS= read -r -d '' file; do

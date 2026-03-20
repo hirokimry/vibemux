@@ -4,7 +4,7 @@ setup-hooks:
 	git config core.hooksPath .githooks
 
 lint:
-	shellcheck aimux .githooks/pre-commit .githooks/pre-push
+	shellcheck vibemux .githooks/pre-commit .githooks/pre-push
 
 test:
 	@if [ -d tests ]; then \
@@ -19,5 +19,5 @@ check: lint test
 
 install:
 	mkdir -p ~/.local/bin
-	ln -sf "$(CURDIR)/aimux" ~/.local/bin/aimux
-	@echo "Installed: ~/.local/bin/aimux"
+	ln -sf "$(CURDIR)/vibemux" ~/.local/bin/vibemux
+	@echo "Installed: ~/.local/bin/vibemux"
