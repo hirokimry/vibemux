@@ -49,7 +49,12 @@ gh api repos/{owner}/{repo}/pulls/{pr_number}/comments \
 
 ### 4. コミットを作成
 
-`/commit` スキルを使用してコミットする。
+Conventional Commits 形式でコミットする。`/commit` スキル（グローバル定義）を使用するか、直接 `git commit` を実行する。
+
+```bash
+git add -A
+git commit -m "fix: address CodeRabbit review comments"
+```
 
 ### 5. リモートにpush
 

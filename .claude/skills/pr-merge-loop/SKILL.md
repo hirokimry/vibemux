@@ -48,6 +48,22 @@ gh pr checks {pr_number} --json name,state --jq '.[] | {name, state}'
 
 #### 2.3 終了条件の判定
 
+**未解決コメントの判定**: CodeRabbit の指摘（`in_reply_to_id == null`）のうち、返信がないものを未解決とみなす。
+
+```bash
+# CodeRabbitの指摘ID一覧
+CR_IDS=$(gh api repos/{owner}/{repo}/pulls/{pr_number}/comments \
+  --jq '[.[] | select(.user.login | test("coderabbit"; "i")) | select(.in_reply_to_id == null) | .id]')
+
+# 返信済みID一覧
+REPLY_TO_IDS=$(gh api repos/{owner}/{repo}/pulls/{pr_number}/comments \
+  --jq '[.[] | select(.in_reply_to_id != null) | .in_reply_to_id] | unique')
+
+# 未返信の指摘を抽出
+echo "$CR_IDS" | jq --argjson replied "$REPLY_TO_IDS" \
+  '[.[] | select(. as $id | $replied | index($id) | not)]'
+```
+
 - CI パス + 未解決コメント0件 → **ループ終了、規約反映へ**
 - それ以外 → 2.4 へ
 
@@ -59,8 +75,16 @@ gh pr checks {pr_number} --json name,state --jq '.[] | {name, state}'
 
 マージ前に `/review-to-rules` を実行する。
 
-変更があればコミット → push → ループ先頭に戻る。
-変更なければマージへ。
+変更検知と処理:
+
+```bash
+if [ -n "$(git status --porcelain .claude/rules/ .claude/knowledge/)" ]; then
+  git add .claude/rules/ .claude/knowledge/
+  # /commit でコミット → push → ループ先頭（2.1）に戻る
+else
+  # 変更なし → マージへ進む
+fi
+```
 
 ### 4. マージ
 
@@ -71,7 +95,7 @@ gh pr merge {pr_number} --squash --delete-branch
 ### 5. ローカルブランチの切り替え
 
 ```bash
-git checkout main && git pull
+git checkout {baseRefName} && git pull
 ```
 
 ### 6. 結果報告
