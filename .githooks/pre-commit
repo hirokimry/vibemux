@@ -135,7 +135,24 @@ check_shellcheck() {
   return 0
 }
 
+# ── Check: Committer Email ──────────────────────────────────
+check_committer_email() {
+  local email
+  email=$(git config user.email || echo "")
+  if [[ -z "$email" ]]; then
+    echo -e "${RED}[pre-commit] git user.email is not set${NC}"
+    return 1
+  fi
+  if [[ "$email" != *"noreply"* ]]; then
+    echo -e "${RED}[pre-commit] git user.email contains personal address: $email${NC}"
+    echo -e "${RED}  Run: git config user.email \"<user>@users.noreply.github.com\"${NC}"
+    return 1
+  fi
+  return 0
+}
+
 # ── Run All Checks ───────────────────────────────────────────
+check_committer_email || errors=1
 check_secrets    || errors=1
 check_email      || errors=1
 check_env_files  || errors=1
