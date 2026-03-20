@@ -19,7 +19,7 @@ jobs:
 
       - name: Secret scan
         run: |
-          pattern='AKIA[0-9A-Z]{16}|(aws_secret_access_key)\s*[=:]\s*\S+|(api[_-]?key|apikey)\s*[=:]\s*['"'"'""]?\S{16,}|(secret|password|passwd|token)\s*[=:]\s*['"'"'""]?\S{8,}|ghp_[A-Za-z0-9_]{36,}|-----BEGIN\s+(RSA|DSA|EC|OPENSSH)?\s*PRIVATE KEY-----|xox[baprs]-[0-9a-zA-Z-]+|AIza[0-9A-Za-z\-_]{35}'
+          pattern='AKIA[0-9A-Z]{16}|(aws_secret_access_key)\s*[=:]\s*\S+|(api[_-]?key|apikey)\s*[=:]\s*['"'"'""]?\S{16,}|(secret|password|passwd|token)\s*[=:]\s*['"'"'""]?\S{8,}|ghp_[A-Za-z0-9_]{36,}|-----BEGIN\s+(RSA|DSA|EC|OPENSSH)?\s*PRIVATE KEY-----|xox[baprs]-[0-9a-zA-Z-]+|AIza[0-9A-Za-z_-]{35}'
           matches=$(grep -r -n -i -E "$pattern" --include='*' \
             --exclude-dir=.git --exclude-dir=.githooks \
             --exclude='ci.yml' . || true)
