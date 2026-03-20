@@ -17,6 +17,12 @@ The CI workflow (`quality` job) must have run on `main` at least once before the
 - Required check: `quality`
 - Require branches to be up to date before merging
 
+### Allow squash merging only
+- **Settings > General > Pull Requests**
+- Enable: **Allow squash merging**
+- Disable: **Allow merge commits** and **Allow rebase merging**
+- Default commit message: **Pull request title**
+
 ### Do not allow force pushes
 - **ON** - Prevents history rewriting on `main`
 
