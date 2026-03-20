@@ -1,0 +1,123 @@
+#!/bin/bash
+set -euo pipefail
+
+# aimux pre-push hook
+# Comprehensive checks on push diff range
+
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+errors=0
+
+# ── Secret Detection Patterns ────────────────────────────────
+secret_patterns() {
+  cat <<'PATTERNS'
+AKIA[0-9A-Z]{16}
+(aws_secret_access_key)\s*[=:]\s*\S+
+(api[_-]?key|apikey)\s*[=:]\s*['"]?\S{16,}
+(secret|password|passwd|token)\s*[=:]\s*['"]?\S{8,}
+ghp_[A-Za-z0-9_]{36,}
+-----BEGIN\s+(RSA|DSA|EC|OPENSSH)?\s*PRIVATE KEY-----
+xox[baprs]-[0-9a-zA-Z-]+
+AIza[0-9A-Za-z\-_]{35}
+PATTERNS
+}
+
+# ── Read push info from stdin ─────────────────────────────────
+while read -r _local_ref local_oid _remote_ref remote_oid; do
+  if [[ "$local_oid" == "0000000000000000000000000000000000000000" ]]; then
+    # Branch deletion, skip
+    continue
+  fi
+
+  if [[ "$remote_oid" == "0000000000000000000000000000000000000000" ]]; then
+    # New branch: check all commits
+    range="$local_oid"
+  else
+    range="$remote_oid..$local_oid"
+  fi
+
+  # ── Check: Secret Detection ────────────────────────────────
+  diff=$(git diff "$range" -U0 -- . ':!.githooks/' 2>/dev/null || true)
+  if [[ -n "$diff" ]]; then
+    pattern=$(secret_patterns | paste -sd'|' -)
+    matches=$(echo "$diff" | grep -E '^\+' | grep -i -E "$pattern" || true)
+    if [[ -n "$matches" ]]; then
+      echo -e "${RED}[pre-push] Potential secrets detected:${NC}"
+      echo "$matches"
+      errors=1
+    fi
+  fi
+
+  # ── Check: Personal Email Detection ────────────────────────
+  if [[ -n "$diff" ]]; then
+    email_matches=$(echo "$diff" | grep -E '^\+' | grep -E '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}' | grep -v -E 'noreply@' || true)
+    if [[ -n "$email_matches" ]]; then
+      echo -e "${RED}[pre-push] Potential personal email addresses detected:${NC}"
+      echo "$email_matches"
+      errors=1
+    fi
+  fi
+
+  # ── Check: .env File Prevention ────────────────────────────
+  env_files=$(git diff --name-only "$range" 2>/dev/null | grep -E '^\.env(\..*)?$' || true)
+  if [[ -n "$env_files" ]]; then
+    echo -e "${RED}[pre-push] .env files must not be pushed:${NC}"
+    echo "$env_files"
+    errors=1
+  fi
+
+  # ── Check: Large File Detection ────────────────────────────
+  max_size=$((1024 * 1024))
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    if git cat-file -e "$local_oid:$file" 2>/dev/null; then
+      size=$(git cat-file -s "$local_oid:$file" 2>/dev/null || echo 0)
+      if [[ "$size" -gt "$max_size" ]]; then
+        echo -e "${RED}[pre-push] File exceeds 1MB: $file ($(( size / 1024 ))KB)${NC}"
+        errors=1
+      fi
+    fi
+  done < <(git diff --name-only --diff-filter=d "$range" 2>/dev/null || true)
+done
+
+# ── Check: shellcheck ────────────────────────────────────────
+if command -v shellcheck &>/dev/null; then
+  shell_files=""
+  for file in aimux .githooks/pre-commit .githooks/pre-push; do
+    [[ -f "$file" ]] && shell_files+="$file "
+  done
+  while IFS= read -r -d '' file; do
+    shell_files+="$file "
+  done < <(find . -name '*.sh' -not -path './.git/*' -print0 2>/dev/null)
+
+  if [[ -n "$shell_files" ]]; then
+    # shellcheck disable=SC2086
+    if ! shellcheck $shell_files; then
+      echo -e "${RED}[pre-push] shellcheck found issues${NC}"
+      errors=1
+    fi
+  fi
+else
+  echo -e "${YELLOW}[pre-push] shellcheck not installed, skipping shell lint${NC}"
+fi
+
+# ── Check: Required Files ────────────────────────────────────
+if [[ ! -f LICENSE ]]; then
+  echo -e "${RED}[pre-push] LICENSE file is missing${NC}"
+  errors=1
+fi
+
+if [[ ! -f README.md ]]; then
+  echo -e "${RED}[pre-push] README.md file is missing${NC}"
+  errors=1
+fi
+
+# ── Result ───────────────────────────────────────────────────
+if [[ "$errors" -ne 0 ]]; then
+  echo -e "${RED}[pre-push] Push blocked. Fix the issues above.${NC}"
+  exit 1
+fi
+
+echo "[pre-push] All checks passed."

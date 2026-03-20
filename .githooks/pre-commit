@@ -1,0 +1,150 @@
+#!/bin/bash
+set -euo pipefail
+
+# aimux pre-commit hook
+# Fast checks (<2s) on staged files only
+
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+errors=0
+
+# ── Secret Detection Patterns ────────────────────────────────
+# Shared patterns used by both pre-commit and pre-push
+secret_patterns() {
+  cat <<'PATTERNS'
+AKIA[0-9A-Z]{16}
+(aws_secret_access_key)\s*[=:]\s*\S+
+(api[_-]?key|apikey)\s*[=:]\s*['"]?\S{16,}
+(secret|password|passwd|token)\s*[=:]\s*['"]?\S{8,}
+ghp_[A-Za-z0-9_]{36,}
+-----BEGIN\s+(RSA|DSA|EC|OPENSSH)?\s*PRIVATE KEY-----
+xox[baprs]-[0-9a-zA-Z-]+
+AIza[0-9A-Za-z\-_]{35}
+PATTERNS
+}
+
+# ── Check: Secret Detection ──────────────────────────────────
+check_secrets() {
+  local diff
+  diff=$(git diff --cached --diff-filter=d -U0 -- . ':!.githooks/')
+
+  if [[ -z "$diff" ]]; then
+    return 0
+  fi
+
+  local pattern
+  pattern=$(secret_patterns | paste -sd'|' -)
+
+  local matches
+  matches=$(echo "$diff" | grep -n -i -E "$pattern" | grep '^\+' || true)
+
+  if [[ -n "$matches" ]]; then
+    echo -e "${RED}[pre-commit] Potential secrets detected in staged changes:${NC}"
+    echo "$matches"
+    return 1
+  fi
+  return 0
+}
+
+# ── Check: Personal Email Detection ──────────────────────────
+check_email() {
+  local diff
+  diff=$(git diff --cached --diff-filter=d -U0)
+
+  local matches
+  matches=$(echo "$diff" | grep -E '^\+' | grep -E '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}' | grep -v -E 'noreply@' || true)
+
+  if [[ -n "$matches" ]]; then
+    echo -e "${RED}[pre-commit] Potential personal email addresses detected:${NC}"
+    echo "$matches"
+    return 1
+  fi
+  return 0
+}
+
+# ── Check: .env File Prevention ──────────────────────────────
+check_env_files() {
+  local env_files
+  env_files=$(git diff --cached --name-only | grep -E '^\.env(\..*)?$' || true)
+
+  if [[ -n "$env_files" ]]; then
+    echo -e "${RED}[pre-commit] .env files must not be committed:${NC}"
+    echo "$env_files"
+    return 1
+  fi
+  return 0
+}
+
+# ── Check: Large File Detection ──────────────────────────────
+check_large_files() {
+  local large_files=""
+  local max_size=$((1024 * 1024))  # 1MB
+
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    local size
+    size=$(git cat-file -s ":$file" 2>/dev/null || echo 0)
+    if [[ "$size" -gt "$max_size" ]]; then
+      large_files+="  $file ($(( size / 1024 ))KB)"$'\n'
+    fi
+  done < <(git diff --cached --name-only --diff-filter=d)
+
+  if [[ -n "$large_files" ]]; then
+    echo -e "${RED}[pre-commit] Files exceed 1MB limit:${NC}"
+    echo "$large_files"
+    return 1
+  fi
+  return 0
+}
+
+# ── Check: shellcheck ────────────────────────────────────────
+check_shellcheck() {
+  if ! command -v shellcheck &>/dev/null; then
+    echo -e "${YELLOW}[pre-commit] shellcheck not installed, skipping shell lint${NC}"
+    return 0
+  fi
+
+  local shell_files=""
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    if [[ "$file" == *.sh ]]; then
+      shell_files+="$file"$'\n'
+    elif [[ -f "$file" ]] && head -1 "$file" 2>/dev/null | grep -qE '^#!.*\b(ba)?sh\b'; then
+      shell_files+="$file"$'\n'
+    fi
+  done < <(git diff --cached --name-only --diff-filter=d)
+
+  if [[ -z "$shell_files" ]]; then
+    return 0
+  fi
+
+  local sc_errors=0
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    if ! shellcheck "$file"; then
+      sc_errors=1
+    fi
+  done <<< "$shell_files"
+
+  if [[ "$sc_errors" -ne 0 ]]; then
+    echo -e "${RED}[pre-commit] shellcheck found issues${NC}"
+    return 1
+  fi
+  return 0
+}
+
+# ── Run All Checks ───────────────────────────────────────────
+check_secrets    || errors=1
+check_email      || errors=1
+check_env_files  || errors=1
+check_large_files || errors=1
+check_shellcheck || errors=1
+
+if [[ "$errors" -ne 0 ]]; then
+  echo -e "${RED}[pre-commit] Commit blocked. Fix the issues above.${NC}"
+  exit 1
+fi
+
+echo "[pre-commit] All checks passed."
