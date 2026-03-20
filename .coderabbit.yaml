@@ -1,0 +1,59 @@
+# CodeRabbit Configuration
+# https://docs.coderabbit.ai/guides/configure-coderabbit
+
+language: ja-JP
+
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+
+  request_changes_workflow: false
+
+  path_filters:
+    - "!**/*.bak"
+    - "!**/*.swp"
+
+  path_instructions:
+    - path: "**"
+      instructions: |
+        PRが対応するIssueの要件を全て満たしているかを必ずチェックすること。
+        PRの説明やブランチ名からIssue番号を特定し、そのIssueの「やること」に記載された全項目が実装されているか確認する。
+        未対応の要件がある場合は明確に指摘すること。
+    - path: "vibemux"
+      instructions: |
+        メインのbashスクリプト。以下を重点的にチェック:
+        - shellcheck 準拠か
+        - set -euo pipefail が先頭にあるか
+        - 変数展開がダブルクォートで囲まれているか
+        - 環境変数プレフィックスが VIBEMUX_ か
+        - セキュリティ: コマンドインジェクションの可能性がないか
+        - tmux コマンドの引数が適切にエスケープされているか
+    - path: "**/*.sh"
+      instructions: |
+        シェルスクリプト。以下をチェック:
+        - shellcheck 準拠か
+        - set -euo pipefail が先頭にあるか
+        - local で関数内変数を宣言しているか
+    - path: "tests/**"
+      instructions: |
+        テストコード。以下をチェック:
+        - テストが実際の振る舞いを検証しているか
+        - エッジケースがカバーされているか
+        - テスト失敗時に非ゼロで終了するか
+    - path: "docs/**"
+      instructions: |
+        ドキュメント。以下をチェック:
+        - コードの実装と矛盾していないか
+        - 手順が最新の状態を反映しているか
+    - path: ".claude/**"
+      instructions: |
+        Claude Code の設定ファイル。以下をチェック:
+        - hooks スクリプトに副作用がないか
+        - エージェント定義が整合しているか
+        - rules のglob パターンが正しいか
+
+chat:
+  auto_reply: true
