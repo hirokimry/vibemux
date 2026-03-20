@@ -3,7 +3,7 @@ name: security-reviewer
 description: >
   セキュリティレビュアー。シークレット検出・脆弱性チェック・安全なシェルスクリプト慣行を確認する。
   コードレビュー時やpush前チェックで起動。
-tools: Read, Grep, Glob
+tools: Read, Bash, Grep, Glob
 model: sonnet
 ---
 
@@ -27,6 +27,13 @@ model: sonnet
 
 - `MVV.md`（必須・最初に読む）
 - `.claude/knowledge/security-principles.md`（存在すれば）
+
+変更差分を取得する:
+
+```bash
+git diff --cached --diff-filter=d -U3
+git diff HEAD --diff-filter=d -U3
+```
 
 ### 2. レビュー観点
 
