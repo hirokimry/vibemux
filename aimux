@@ -1,0 +1,117 @@
+#!/bin/bash
+set -euo pipefail
+
+VERSION="0.1.0"
+
+# ── Configuration ──────────────────────────────────────────────
+AIMUX_PANE_TOP_LEFT="${AIMUX_PANE_TOP_LEFT:-yazi}"
+AIMUX_PANE_BOTTOM_LEFT="${AIMUX_PANE_BOTTOM_LEFT:-lazygit}"
+AIMUX_PANE_RIGHT="${AIMUX_PANE_RIGHT:-}"
+AIMUX_RIGHT_RATIO="${AIMUX_RIGHT_RATIO:-70}"
+AIMUX_FOCUS="${AIMUX_FOCUS:-right}"
+
+# Load user config if present
+AIMUX_CONFIG="${AIMUX_CONFIG:-$HOME/.config/aimux/config}"
+if [[ -f "$AIMUX_CONFIG" ]]; then
+  # shellcheck source=/dev/null
+  source "$AIMUX_CONFIG"
+fi
+
+# ── Helpers ────────────────────────────────────────────────────
+usage() {
+  cat <<EOF
+aimux $VERSION - AI pair programming workspace for tmux
+
+Usage:
+  aimux new <session-name> [directory]   Create a new 3-pane session
+  aimux attach <session-name>            Attach to an existing session
+  aimux list                             List active sessions
+  aimux version                          Show version
+
+Layout:
+  ┌──────────┬─────────────────────┐
+  │ top-left │                     │
+  │          │       right         │
+  ├──────────┤                     │
+  │ bot-left │                     │
+  └──────────┴─────────────────────┘
+
+Configuration (environment variables):
+  AIMUX_PANE_TOP_LEFT      Command for top-left pane     (default: yazi)
+  AIMUX_PANE_BOTTOM_LEFT   Command for bottom-left pane  (default: lazygit)
+  AIMUX_PANE_RIGHT         Command for right pane        (default: shell)
+  AIMUX_RIGHT_RATIO        Right pane width percentage    (default: 70)
+  AIMUX_FOCUS              Initial focus: right|top-left|bottom-left (default: right)
+  AIMUX_CONFIG             Path to config file            (default: ~/.config/aimux/config)
+EOF
+}
+
+die() {
+  echo "aimux: $1" >&2
+  exit 1
+}
+
+resolve_focus_pane() {
+  case "$AIMUX_FOCUS" in
+    top-left)    echo "0.0" ;;
+    bottom-left) echo "0.1" ;;
+    right|*)     echo "0.2" ;;
+  esac
+}
+
+# ── Subcommands ────────────────────────────────────────────────
+cmd_new() {
+  local session="$1"
+  local dir="${2:-.}"
+
+  dir="$(cd "$dir" 2>/dev/null && pwd)" || die "directory not found: ${2:-.}"
+
+  tmux has-session -t "$session" 2>/dev/null && die "session '$session' already exists (use 'aimux attach $session')"
+
+  # Build 3-pane layout
+  tmux new-session -d -s "$session" -c "$dir"
+  tmux split-window -h -l "${AIMUX_RIGHT_RATIO}%" -t "$session" -c "$dir"
+  tmux split-window -v -t "$session:0.0" -c "$dir"
+
+  # Launch commands (pane indices: 0=top-left, 1=bottom-left, 2=right)
+  [[ -n "$AIMUX_PANE_TOP_LEFT" ]]     && tmux send-keys -t "$session:0.0" "$AIMUX_PANE_TOP_LEFT" C-m
+  [[ -n "$AIMUX_PANE_BOTTOM_LEFT" ]]  && tmux send-keys -t "$session:0.1" "$AIMUX_PANE_BOTTOM_LEFT" C-m
+  [[ -n "$AIMUX_PANE_RIGHT" ]]        && tmux send-keys -t "$session:0.2" "$AIMUX_PANE_RIGHT" C-m
+
+  tmux select-pane -t "$session:$(resolve_focus_pane)"
+  tmux attach -t "$session"
+}
+
+cmd_attach() {
+  local session="$1"
+  tmux has-session -t "$session" 2>/dev/null || die "session '$session' not found (use 'aimux list' to see active sessions)"
+  tmux attach -t "$session"
+}
+
+cmd_list() {
+  tmux list-sessions 2>/dev/null || echo "No active sessions."
+}
+
+# ── Main ───────────────────────────────────────────────────────
+case "${1:-}" in
+  new)
+    [[ -z "${2:-}" ]] && die "usage: aimux new <session-name> [directory]"
+    cmd_new "$2" "${3:-}"
+    ;;
+  attach)
+    [[ -z "${2:-}" ]] && die "usage: aimux attach <session-name>"
+    cmd_attach "$2"
+    ;;
+  list)
+    cmd_list
+    ;;
+  version|--version|-v)
+    echo "aimux $VERSION"
+    ;;
+  help|--help|-h)
+    usage
+    ;;
+  *)
+    usage
+    ;;
+esac
