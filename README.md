@@ -1,5 +1,7 @@
 # aimux
 
+[日本語](README.ja.md)
+
 AI pair programming workspace for tmux.
 
 One command launches a 3-pane tmux session — file manager, git client, and AI coding assistant side by side. Your terminal becomes a fully-equipped AI development cockpit.
