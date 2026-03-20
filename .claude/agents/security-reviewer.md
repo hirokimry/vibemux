@@ -52,7 +52,7 @@ git diff HEAD --diff-filter=d -U3
 
 ### 3. 出力
 
-```
+```text
 ## セキュリティレビュー
 
 ### シークレット検出
