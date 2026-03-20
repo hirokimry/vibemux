@@ -1,0 +1,22 @@
+# vibecorp.lock — 自動生成、手動編集禁止
+version: 0.1.0
+installed_at: 2026-03-20T18:43:08+00:00
+preset: minimal
+vibecorp_commit: aabfc52
+files:
+  hooks:
+    - protect-files.sh
+  skills:
+    - commit
+    - pr-merge-loop
+    - pr-review-fix
+    - pr
+    - review-loop
+    - review
+  rules:
+    - comments.md
+    - markdown.md
+    - mvv.md
+    - review-criteria.md
+    - testing.md
+
