@@ -21,13 +21,20 @@ PRレビューで修正した指摘を分析し、再発防止のために rules
 返信済み（＝修正済み）の指摘を収集する。
 
 ```bash
-# CodeRabbitのトップレベルコメント
-CR_IDS=$(gh api repos/{owner}/{repo}/pulls/{pr_number}/comments \
-  --jq '[.[] | select(.user.login | test("coderabbit"; "i")) | select(.in_reply_to_id == null) | .id]')
+# owner/repo を取得
+gh repo view --json owner,name --jq '(.owner.login) + "/" + (.name)'
+
+# CodeRabbitのトップレベルコメント（IDとbodyを取得）
+CR_COMMENTS=$(gh api repos/{owner}/{repo}/pulls/{pr_number}/comments \
+  --jq '[.[] | select(.user.login | test("coderabbit"; "i")) | select(.in_reply_to_id == null) | {id: .id, path: .path, body: .body}]')
 
 # 返信済みIDの抽出
 REPLY_TO_IDS=$(gh api repos/{owner}/{repo}/pulls/{pr_number}/comments \
   --jq '[.[] | select(.in_reply_to_id != null) | .in_reply_to_id] | unique')
+
+# 返信済み（修正済み）の指摘のみ抽出（IDとbody付き）
+RESOLVED=$(echo "$CR_COMMENTS" | jq --argjson replied "$REPLY_TO_IDS" \
+  '[.[] | select(.id as $id | $replied | index($id))]')
 ```
 
 ### 2. 指摘の分類

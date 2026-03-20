@@ -23,6 +23,10 @@ PRのレビューコメントを取得し、指摘を修正してコメントに
 **PR URLが未指定の場合**: 現在のブランチから自動検出する:
 
 ```bash
+# owner/repo を取得
+gh repo view --json owner,name --jq '(.owner.login) + "/" + (.name)'
+
+# PR番号を取得
 gh pr view --json number,url,headRefName --jq '.number'
 ```
 
