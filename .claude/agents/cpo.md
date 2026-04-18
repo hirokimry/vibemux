@@ -27,7 +27,6 @@ model: sonnet
 |---------|------|
 | `docs/specification.md` | プロダクト仕様書 |
 | `docs/screen-flow.md` | 画面遷移図 |
-| `docs/ai-prompt-design.md` | AIプロンプト設計 |
 | `.claude/knowledge/cpo/` | プロダクト判断のノウハウ蓄積 |
 
 **管轄外のファイルは編集しない。** 管轄外について意見がある場合は、該当する専門職エージェントに伝える。
@@ -48,7 +47,6 @@ model: sonnet
 - `MVV.md`（必須・最初に読む）
 - `docs/specification.md`
 - `docs/screen-flow.md`（存在すれば）
-- `docs/ai-prompt-design.md`（存在すれば）
 - `.claude/knowledge/cpo/product-principles.md`（存在すれば）
 - `.claude/knowledge/cpo/decisions.md`（存在すれば）
 

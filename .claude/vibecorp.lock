@@ -1,8 +1,8 @@
 # vibecorp.lock — 自動生成、手動編集禁止
-version: 0.17.6
-installed_at: 2026-04-18T01:30:35+00:00
+version: 0.17.8
+installed_at: 2026-04-18T12:24:34+00:00
 preset: full
-vibecorp_commit: 2ead32a
+vibecorp_commit: c1e56d6
 files:
   hooks:
     - block-api-bypass.sh
@@ -67,35 +67,18 @@ files:
     - shell.md
     - testing.md
     - use-skills.md
-  issue_templates:
-    - bug_report.md
-    - config.yml
-    - feature_request.md
+  issue_templates: []
   docs:
-    - ai-organization.md
-    - cost-analysis.md
-    - POLICY.md
-    - SECURITY.md
-    - specification.md
-  knowledge:
-    - accounting/cost-audit-template.md
-    - accounting/cost-principles.md
-    - sm/organization.md
-    - cpo/product-principles.md
-    - cpo/decisions.md
-    - security/security-principles.md
-    - security/security-audit-template.md
-    - cto/tech-principles.md
-    - cto/decisions.md
-    - legal/legal-principles.md
+    - design-philosophy.md
+  knowledge: []
   base_hashes:
     hooks/block-api-bypass.sh: 87ab95cc06be8a3b189efa11d779233870afd6fb9d11c1e0d36f69ffe0e00e91
     hooks/command-log.sh: 12c206ce19ef05917fec85eba4a349baec806eab1d053faf8864e4ccc8c71e6c
     hooks/diagnose-guard.sh: 7bf3f91906bd29730242d38cfc699b1452f0751b0d13dcaeb54bb3cd464c084a
-    hooks/protect-branch.sh: 0e91fbb8f9ce0c2d9b6260b5733544d44de99a6db050ca3fa124332a693de61d
+    hooks/protect-branch.sh: a88ae336afb8aba654952dac5021f213110c9c272803aae0098458dcb4798b06
     hooks/protect-files.sh: 037456f1eada4d3e466e77ca0ae9402afedfa549cf9b59826ee941166da68a87
     hooks/review-gate.sh: 0bce7f81b024030034d916e89b067d2d879c6d6e380f17e01d3816fade2f5352
-    hooks/role-gate.sh: 767c20dd7d292888087e85eeba056880303e59f66dc033ae4ad4f48767fd2532
+    hooks/role-gate.sh: 3969a46ec4951ddd6fa875274519af428b6dbe67031d6702b8c7b0a2e67f8b4e
     hooks/sync-gate.sh: 6228603e3102a6aa99df4a5d3a468715b1511442f9eee973d432635aa97de5a3
     hooks/team-auto-approve.sh: e9684eebebac752e71b0b54370ec15d725a5794c28caa775554537565e8323d4
     rules/autonomous-restrictions.md: 9fdf2e08c0621e5d288e6e76b62e1c485b9de042f073df9b022c6e152c7e16f4

@@ -27,6 +27,7 @@ model: sonnet
 | ファイル | 内容 |
 |---------|------|
 | `docs/specification.md`（技術スタック部分） | アーキテクチャ・技術選定の記載 |
+| `docs/design-philosophy.md` | 設計思想・アーキテクチャ判断の記録 |
 | `.claude/rules/` | 全エージェントが守るべきコーディング規約 |
 | `.claude/knowledge/cto/` | 技術的なノウハウ・判断の蓄積 |
 

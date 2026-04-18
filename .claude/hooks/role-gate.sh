@@ -47,10 +47,10 @@ is_allowed() {
     cpo)
       [[ "$path" == *docs/specification.md ]] && return 0
       [[ "$path" == *docs/screen-flow.md ]] && return 0
-      [[ "$path" == *docs/ai-prompt-design.md ]] && return 0
       ;;
     cto)
       [[ "$path" == *docs/specification.md ]] && return 0
+      [[ "$path" == *docs/design-philosophy.md ]] && return 0
       ;;
     legal)
       [[ "$path" == *docs/POLICY.md ]] && return 0
