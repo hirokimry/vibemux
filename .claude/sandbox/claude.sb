@@ -1,0 +1,113 @@
+;; claude.sb — macOS sandbox-exec プロファイル（vibecorp 隔離レイヤ Phase 1）
+;;
+;; 目的:
+;;   Claude プロセスからホストマシンへの不用意な書き込み・秘匿ファイル読取を
+;;   防ぐ最低限の境界を敷く。
+;;
+;; 境界:
+;;   書込許可 : worktree, ~/.claude, ~/.claude.json (+.backup/.lock/.tmp.<pid>.<ms>),
+;;              ~/.cache/vibecorp（ゲートスタンプ保存先）,
+;;              ~/.cache/claude, ~/.local/state/claude（Claude Code 2.1.112+ XDG サイドカー）,
+;;              /tmp, $TMPDIR
+;;   読取許可 : /usr, /System, /Library, /opt/homebrew, /usr/local,
+;;              ~/.gitconfig, ~/.config/gh, ~/.npm, ~/.local/share/claude
+;;   ioctl   : /dev 配下（TTY raw mode 切替に必須）
+;;   拒否    : ~/.ssh, ~/.aws, ~/.gnupg, ~/Library/Keychains（deny default で自動）
+;;   ネット  : 全許可（host allowlist は将来検討）
+;;   プロセス : fork / exec は許可
+;;
+;; パラメータ（-D KEY=VALUE で注入）:
+;;   WORKTREE       — ホスト上の作業ツリールート
+;;   HOME           — ユーザーホーム
+;;   DARWIN_TMPDIR  — macOS の $TMPDIR（通常 /var/folders/.../T/）
+;;
+;; 参照: #293 / #309
+
+(version 1)
+(deny default)
+
+;; ----- subprocess -----
+(allow process-fork)
+(allow process-exec)
+
+;; ----- network -----
+(allow network*)
+
+;; ----- メタ情報 / IPC -----
+(allow file-read-metadata)
+(allow sysctl-read)
+(allow mach-lookup)
+(allow signal (target self))
+(allow ipc-posix-shm)
+(allow iokit-open (iokit-user-client-class "IOSurfaceSendRight"))
+
+;; ----- RW: worktree, ~/.claude, /tmp, $TMPDIR -----
+(allow file-write* file-read*
+  (subpath (param "WORKTREE"))
+  (subpath (string-append (param "HOME") "/.claude"))
+  (subpath "/tmp")
+  (subpath "/private/tmp")
+  (subpath (param "DARWIN_TMPDIR")))
+
+;; ----- RW: claude グローバル設定（OAuth トークン・プロジェクト一覧等）-----
+;; Claude Code は OAuth state を原子的置換で永続化するため、以下のサイドカーを生成する:
+;;   .claude.json              — 本体
+;;   .claude.json.backup       — 更新前バックアップ
+;;   .claude.json.lock         — 書込ロック（固定名）
+;;   .claude.json.tmp.<pid>.<ms> — 新内容の一時ファイル（rename で本体へ）
+;; literal で単一ファイルに限定し、~/.local 全体や ~/.config 全体には拡張しない。
+;; tmp は動的 pid/ms のため regex で対応（^$ 固定でサフィックス付加を拒否）。
+;; HOME は vibecorp-sandbox 側で validate_abs_path / canonicalize_dir 済み。
+(allow file-read* file-write*
+  (literal (string-append (param "HOME") "/.claude.json"))
+  (literal (string-append (param "HOME") "/.claude.json.backup"))
+  (literal (string-append (param "HOME") "/.claude.json.lock")))
+
+(allow file-read* file-write*
+  (regex (string-append "^" (param "HOME") "/\\.claude\\.json\\.tmp\\.[0-9]+\\.[0-9]+$")))
+
+;; ----- RW: vibecorp ゲートスタンプ保存先 (#326) -----
+;; .claude/ 配下を避けることで Claude Code の書込確認プロンプトを回避する。
+;; install.sh が ~/.cache/vibecorp を事前作成するため、sandbox 内では
+;; 親ディレクトリ作成は不要（subpath 配下の create のみ許可）。
+(allow file-read* file-write*
+  (subpath (string-append (param "HOME") "/.cache/vibecorp")))
+
+;; ----- RW: Claude Code XDG サイドカー (#331) -----
+;; Claude Code 2.1.112+ は OAuth state を XDG 3 ディレクトリにまたがって管理する:
+;;   ~/.local/share/claude/versions/<ver>/ — バイナリ実体（RO で既許可）
+;;   ~/.local/state/claude/locks/<ver>.lock — バージョン固有ロック（書込必須）
+;;   ~/.cache/claude/staging/              — staging 領域（書込必須）
+;; subpath で claude 直下全体を許可（lock ファイル名はバージョン依存のため literal 不可）。
+;; ~/.cache 全体・~/.local/state 全体には拡張しない（他アプリのサイドカーを巻き込まない）。
+(allow file-read* file-write*
+  (subpath (string-append (param "HOME") "/.cache/claude"))
+  (subpath (string-append (param "HOME") "/.local/state/claude")))
+
+;; ----- /dev: 標準入出力・TTY・null デバイス等に必要 -----
+;; file-ioctl は TTY raw mode 切替（_IO('t', 20) 等）に必須
+(allow file-read* file-write-data
+  (subpath "/dev"))
+(allow file-ioctl
+  (subpath "/dev"))
+
+;; ----- RO: システム・ランタイム（bash・libc・ランタイムリンカ等の起動に必要） -----
+;; (literal "/") はプロセスの初期パス解決（ルート traversal）に必要
+(allow file-read*
+  (literal "/")
+  (subpath "/usr")
+  (subpath "/bin")
+  (subpath "/sbin")
+  (subpath "/System")
+  (subpath "/Library")
+  (subpath "/opt/homebrew")
+  (subpath "/usr/local")
+  (subpath "/private/etc")
+  (subpath "/private/var/db")
+  (subpath "/private/var/folders")
+  ;; ユーザー設定（RO）
+  (literal (string-append (param "HOME") "/.gitconfig"))
+  (subpath (string-append (param "HOME") "/.config/gh"))
+  (subpath (string-append (param "HOME") "/.npm"))
+  ;; claude バイナリ実体（npm global の ~/.local/share/claude/versions/<ver>/）
+  (subpath (string-append (param "HOME") "/.local/share/claude")))

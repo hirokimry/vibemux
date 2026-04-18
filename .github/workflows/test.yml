@@ -1,0 +1,53 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: test-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  test-matrix:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: jq の確認
+        run: jq --version
+
+      - name: 全テスト実行
+        run: |
+          shopt -s nullglob
+          files=(tests/test_*.sh)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "テストファイルが見つかりません"
+            exit 1
+          fi
+          failed=0
+          for f in "${files[@]}"; do
+            echo "=== $f ==="
+            bash "$f" || failed=1
+          done
+          exit "$failed"
+
+  # matrix ジョブの結果を集約し、Branch Protection の required check として機能する
+  test:
+    needs: test-matrix
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: 全 matrix ジョブの成功を確認
+        run: |
+          result="${{ needs.test-matrix.result }}"
+          if [ "$result" = "success" ] || [ "$result" = "cancelled" ]; then
+            echo "test-matrix: $result"
+            exit 0
+          fi
+          echo "test-matrix が失敗しました: $result"
+          exit 1
