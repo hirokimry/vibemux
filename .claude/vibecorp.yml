@@ -1,6 +1,6 @@
 # vibecorp.yml — プロジェクト設定
 name: vibemux
-preset: minimal
+preset: full
 language: ja
 base_branch: main
 protected_files:

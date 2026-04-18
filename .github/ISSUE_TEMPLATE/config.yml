@@ -1,0 +1,2 @@
+# テンプレートを使わない Issue の作成を許可
+blank_issues_enabled: true

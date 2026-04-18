@@ -8,6 +8,15 @@ description: "Conventional Commits形式でのGitコミット自動化。変更�
 変更を分析し、Conventional Commits形式でコミットを作成する。
 **結果のみを簡潔に返すこと。途中経過は不要。**
 
+## worktree モード
+
+`--worktree <path>` が指定された場合、全操作を指定パス内で実行する。
+
+- **Bash**: 全コマンドを `cd <path> && command` で実行する
+- **Read/Write/Edit**: `<path>/` を基準とした絶対パスを使用する
+- **サブスキル呼び出し**: `--worktree <path>` を引き継ぐ
+- 未指定時は従来通り CWD で実行する（後方互換）
+
 ## ワークフロー
 
 ### 1. リポジトリ情報の取得
@@ -69,8 +78,8 @@ git log --oneline -1
 ## 制約
 
 - `--force`、`--hard`、`--no-verify` は使用しない
-- **jq では string interpolation `\(...)` を使わない** — 必ず `+` で結合する
-- **コマンドをそのまま実行する** — `2>/dev/null`、`|| echo`、`; echo` 等のリダイレクトやフォールバックを付加しない
+- **jq では string interpolation `\(...)` を使わない** — Bash 上で `\` がエスケープ文字、`()` がサブシェルとして解釈され、意図しない展開やパースエラーを引き起こすため。必ず `+` で結合する
+- **コマンドをそのまま実行する** — `2>/dev/null`、`|| echo`、`; echo` 等のリダイレクトやフォールバックを付加しない（[根拠](docs/design-philosophy.md#コマンドリダイレクトフォールバックの禁止)）
 - `.env`、認証情報、シークレットはコミットしない
 - 明示的な要求なしに `--amend` や `push` しない
 - `git add -A` より特定ファイルのステージングを優先
