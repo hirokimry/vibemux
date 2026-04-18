@@ -1,0 +1,72 @@
+#!/bin/bash
+# claude — PATH シム
+#
+# 目的:
+#   ユーザーの PATH 先頭に配置し、`claude` コマンドを透過的に
+#   vibecorp-sandbox 経由で起動するための薄いラッパー。
+#
+# 動作:
+#   - 祖先に sandbox-exec があり VIBECORP_SANDBOXED=1 → claude-real を exec（入れ子防止）
+#   - VIBECORP_ISOLATION が "1" 以外                 → claude-real を exec（opt-in）
+#   - それ以外                                       → vibecorp-sandbox claude-real ... を exec
+#
+# 二重サンドボックス防止の判定方針:
+#   環境変数 `VIBECORP_SANDBOXED=1` のみで passthrough すると、
+#   外部から `env VIBECORP_SANDBOXED=1 claude ...` を実行するだけで
+#   sandbox をバイパスできてしまう。
+#   そこで祖先プロセスに `sandbox-exec` が存在することを PPID チェーンで検証し、
+#   その AND 条件で passthrough する（環境変数単独では信頼しない）。
+#   参照: #309 / .claude/knowledge/security/audit-log.md S-005/S-009/T-001
+#
+# 制約:
+#   エラー抑制禁止（docs/design-philosophy.md）。
+#   2>/dev/null, || true 等は付けない。
+#
+# 参照: #293 / #309
+
+set -euo pipefail
+
+# 自身のディレクトリを解決（BSD/GNU 両対応のため readlink -f は使わない）
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# PPID チェーンを遡り、祖先に sandbox-exec があるかを判定する
+# macOS 専用（ps -o comm= が basename を返す前提）。
+# Linux 等では常に false を返すので、Phase 2 以降で該当 OS の検出を追加する。
+is_inside_sandbox_exec() {
+  local pid=$$
+  local ppid comm
+  local i=0
+  # 無限ループ保険として 32 段で打ち切り
+  while [[ "$i" -lt 32 ]]; do
+    ppid=$(ps -p "$pid" -o ppid=)
+    ppid="${ppid//[[:space:]]/}"
+    if [[ -z "$ppid" || "$ppid" == "0" || "$ppid" == "1" ]]; then
+      return 1
+    fi
+    comm=$(ps -p "$ppid" -o comm=)
+    comm="${comm##*/}"
+    comm="${comm//[[:space:]]/}"
+    if [[ "$comm" == "sandbox-exec" ]]; then
+      return 0
+    fi
+    pid="$ppid"
+    i=$((i + 1))
+  done
+  return 1
+}
+
+# 1. サンドボックス内部から起動された場合は即 passthrough（二重サンドボックス防止）
+#    PPID チェーン上に sandbox-exec がある AND VIBECORP_SANDBOXED=1 の両方を要求する。
+#    環境変数単独では外部注入でバイパスされるため信頼しない。
+if [[ "${VIBECORP_SANDBOXED:-0}" == "1" ]] && is_inside_sandbox_exec; then
+  exec claude-real "$@"
+fi
+
+# 2. opt-in が有効でない場合は passthrough
+#    （VIBECORP_ISOLATION が "1" 以外 — 0 / 未設定 / その他値 — はすべて素通し）
+if [[ "${VIBECORP_ISOLATION:-0}" != "1" ]]; then
+  exec claude-real "$@"
+fi
+
+# 3. 隔離モード: vibecorp-sandbox 経由で claude-real を起動
+exec "${SCRIPT_DIR}/vibecorp-sandbox" claude-real "$@"

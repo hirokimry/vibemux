@@ -1,22 +1,135 @@
 # vibecorp.lock — 自動生成、手動編集禁止
-version: 0.1.0
-installed_at: 2026-03-20T18:43:08+00:00
-preset: minimal
-vibecorp_commit: aabfc52
+version: 0.17.6
+installed_at: 2026-04-18T01:30:35+00:00
+preset: full
+vibecorp_commit: 2ead32a
 files:
   hooks:
+    - block-api-bypass.sh
+    - command-log.sh
+    - diagnose-guard.sh
+    - protect-branch.sh
     - protect-files.sh
+    - review-gate.sh
+    - role-gate.sh
+    - sync-gate.sh
+    - team-auto-approve.sh
   skills:
+    - approve-audit
+    - audit-cost
+    - audit-security
+    - autopilot
+    - branch
     - commit
-    - pr-merge-loop
+    - context7
+    - diagnose
+    - harvest-all
+    - issue
+    - knowledge-pr
+    - plan-review-loop
+    - plan
     - pr-review-fix
+    - pr-review-loop
     - pr
+    - review-harvest
     - review-loop
     - review
+    - session-harvest
+    - ship-parallel
+    - ship
+    - spike-loop
+    - sync-check
+    - sync-edit
+    - worktree
+  agents:
+    - accounting-analyst.md
+    - cfo.md
+    - ciso.md
+    - clo.md
+    - cpo.md
+    - cto.md
+    - legal-analyst.md
+    - plan-architect.md
+    - plan-cost.md
+    - plan-dx.md
+    - plan-legal.md
+    - plan-performance.md
+    - plan-security.md
+    - plan-testing.md
+    - security-analyst.md
+    - sm.md
   rules:
+    - autonomous-restrictions.md
     - comments.md
     - markdown.md
     - mvv.md
     - review-criteria.md
+    - shell.md
     - testing.md
+    - use-skills.md
+  issue_templates:
+    - bug_report.md
+    - config.yml
+    - feature_request.md
+  docs:
+    - ai-organization.md
+    - cost-analysis.md
+    - POLICY.md
+    - SECURITY.md
+    - specification.md
+  knowledge:
+    - accounting/cost-audit-template.md
+    - accounting/cost-principles.md
+    - sm/organization.md
+    - cpo/product-principles.md
+    - cpo/decisions.md
+    - security/security-principles.md
+    - security/security-audit-template.md
+    - cto/tech-principles.md
+    - cto/decisions.md
+    - legal/legal-principles.md
+  base_hashes:
+    hooks/block-api-bypass.sh: 87ab95cc06be8a3b189efa11d779233870afd6fb9d11c1e0d36f69ffe0e00e91
+    hooks/command-log.sh: 12c206ce19ef05917fec85eba4a349baec806eab1d053faf8864e4ccc8c71e6c
+    hooks/diagnose-guard.sh: 7bf3f91906bd29730242d38cfc699b1452f0751b0d13dcaeb54bb3cd464c084a
+    hooks/protect-branch.sh: 0e91fbb8f9ce0c2d9b6260b5733544d44de99a6db050ca3fa124332a693de61d
+    hooks/protect-files.sh: 037456f1eada4d3e466e77ca0ae9402afedfa549cf9b59826ee941166da68a87
+    hooks/review-gate.sh: 0bce7f81b024030034d916e89b067d2d879c6d6e380f17e01d3816fade2f5352
+    hooks/role-gate.sh: 767c20dd7d292888087e85eeba056880303e59f66dc033ae4ad4f48767fd2532
+    hooks/sync-gate.sh: 6228603e3102a6aa99df4a5d3a468715b1511442f9eee973d432635aa97de5a3
+    hooks/team-auto-approve.sh: e9684eebebac752e71b0b54370ec15d725a5794c28caa775554537565e8323d4
+    rules/autonomous-restrictions.md: 9fdf2e08c0621e5d288e6e76b62e1c485b9de042f073df9b022c6e152c7e16f4
+    rules/comments.md: a8bdaf0c489fcef2981336563418d1c077aa54d19390a2a287abe61f87fa049a
+    rules/markdown.md: b8699881fd9ceac44f7ed966ebd992f6014fe290290bd2a6bbae45a6efcf0c1c
+    rules/mvv.md: 5818a1129d7ecf373b91e4437f982def9a1d850dbfd566285e8c2c9f34c14033
+    rules/review-criteria.md: 6822820bc5a263294f13fd49875e7a709057560f9db5d6728b525d6e8cea3660
+    rules/shell.md: 94d11ee8eeedc9978f18f73b31e32d6f387af85fe421b92b95878a91709f7baf
+    rules/testing.md: 2e44f995e2df6b5dd2d5e844045ed79e1912676598b6cc34ad705d2f760a09ed
+    rules/use-skills.md: e3cb069dd6925fb0089dff86a94a443dea2cf76e16bfb39000eb8df26a453a48
+    skills/approve-audit/SKILL.md: 1178d413ee9af094bda21dd8c5a48b7eba4477c3f33da1989558a890917fb0b2
+    skills/audit-cost/SKILL.md: 5ea88c61b8cd3ec6b002670b28ffc11fef30aa114c4b3732b566d83a1d580549
+    skills/audit-security/SKILL.md: 490e1b04295007d60f0592ed9b2ee4e8e2019da341496077cd7b4980700b0827
+    skills/autopilot/SKILL.md: 20969f51875c3e77e1bc9fa4aff64f18a697b0c1fd00f0ea71cdbf598305f315
+    skills/branch/SKILL.md: de40d84e712dc66dae4b866a8d7fd2b652d77c6fbf5ead41737a272a6873e1ff
+    skills/commit/SKILL.md: 45c12659ddf1877114c0b14c02e39df10aa8cbff7e9b3157338a7f8a2811648b
+    skills/context7/SKILL.md: ff98cb68fc02e8e457202ca99a5316e86e12f1b34dd128e64fb366fc656faa70
+    skills/diagnose/SKILL.md: 81f73e505afd0da11ddc011aae8297f945e111ddadb123f9f7cc511f98ac70d9
+    skills/harvest-all/SKILL.md: 81e3b9601404bace19aab4870a16c529d6e7b80815203460d703f5a013885ead
+    skills/issue/SKILL.md: 94d30a1d6775fe17ab2cb6b83257ec503267fc74985a104eee865503a82af178
+    skills/knowledge-pr/SKILL.md: e4dba412cfe2c31d168960843901e41f3b6cb9abe3d6216898f096f4817cbc99
+    skills/plan-review-loop/SKILL.md: c3e92156365c9a8dd6081b7b1aa594c7780028da991d9c59751da0b4f1c7dee6
+    skills/plan/SKILL.md: 8a21b1e47b44d737e439ff3f971aad02843ab1abeb085a676657183e8de2b856
+    skills/pr-review-fix/SKILL.md: ea28f21a3346904c77631b23f198d4018bfff71faf4ad340eee7ca1e4db4a6a3
+    skills/pr-review-loop/SKILL.md: 7be6db29182413251bbe2bb3ec3799de54afea8e751a4f312b0de35a41e9c58e
+    skills/pr/SKILL.md: 8bd64c223810997512444239596485a1dd764a59d15060090b7fbb05079a3c6c
+    skills/review-harvest/SKILL.md: aeb64697a09f461380040d50ee3fd89ec89b0aeee1f789071e828eaf17b1387c
+    skills/review-loop/SKILL.md: da42343fa69b017c974e0cb7831506bfcc7e90a6764927e70d92b813d7280048
+    skills/review/SKILL.md: e8621a1ab67fd4a74dbd2f1470ff7621f7352171fbaf3c7ce8e1738c5283020e
+    skills/session-harvest/SKILL.md: b15f5aa313fa6a28ad43db8acbb28d12ba219735feca5dbdef5b7a649f52a20f
+    skills/ship-parallel/SKILL.md: 81809baf548ef8571fb78a78f272d80198a7af663ed34a9866d5478e666e9faf
+    skills/ship/SKILL.md: 058dcf60453640b9615ffb4ae28e2f1ade96c94038609e25d92c20b1f1125e72
+    skills/spike-loop/SKILL.md: 3eae50ce7f416a2c854ec3f1dd75e44bb67888939b33f5cf75f1b1cb10940f5d
+    skills/sync-check/SKILL.md: 3afaa6ada3424f77fe5990f9631a4431de474c0ac5c570b2e52567432c58a71a
+    skills/sync-edit/SKILL.md: 77e5a7eb331929eff9537d883a8198ee12f8736d401e045f7f0aebc6e87f3590
+    skills/worktree/SKILL.md: df692d0eab1ddd4fd0c15cc955f6f80e94936599cc3e0411e6d640cdab3a3eb6
 

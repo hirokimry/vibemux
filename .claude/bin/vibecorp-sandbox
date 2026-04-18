@@ -1,0 +1,155 @@
+#!/bin/bash
+# vibecorp-sandbox — OS ディスパッチャ
+#
+# 目的:
+#   OS を判定し、対応するサンドボックス機構を使って引数で指定された
+#   コマンドを隔離実行する。Phase 1 では Darwin のみ実装する。
+#
+# 使い方:
+#   vibecorp-sandbox <command> [args...]
+#
+#   コマンドの解決は sandbox-exec 起動後の PATH に委ねる。
+#
+# 挙動:
+#   - Darwin: sandbox-exec -f <profile> -D ... env VIBECORP_SANDBOXED=1 "$@"
+#   - Linux:  stderr に Phase 2 未実装メッセージを出して exit 2
+#   - その他: 同上
+#
+# 参照: #293 / #309
+
+set -euo pipefail
+
+if [[ $# -lt 1 ]]; then
+  echo "vibecorp-sandbox: 使い方: vibecorp-sandbox <command> [args...]" >&2
+  exit 64
+fi
+
+# 自身のディレクトリを解決（sandbox profile を相対パスで特定するため）
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROFILE="${SCRIPT_DIR}/../sandbox/claude.sb"
+
+OS="$(uname -s)"
+
+# パス値の検証（sandbox-exec の -D 引数に渡す前に sanitize する）
+#
+# 目的:
+#   $PWD / $HOME / $TMPDIR は外部（シェル・CI 環境・親プロセス）から汚染されうる。
+#   これらを sandbox-exec の (param "KEY") に無検証で渡すと、
+#   プロファイル内の `(subpath (param "WORKTREE"))` が `/` や `$HOME` 全体に展開され、
+#   sandbox の書込境界が崩壊する。
+#
+# 参照: .claude/rules/shell.md「ファイル名に外部入力を使う場合」
+validate_abs_path() {
+  local value="$1"
+  local name="$2"
+  if [[ -z "$value" ]]; then
+    echo "vibecorp-sandbox: $name が空です" >&2
+    exit 1
+  fi
+  if [[ "$value" != /* ]]; then
+    echo "vibecorp-sandbox: $name は絶対パスである必要があります: $value" >&2
+    exit 1
+  fi
+  if [[ "$value" == "/" ]]; then
+    echo "vibecorp-sandbox: $name をルート(/)にはできません: $value" >&2
+    exit 1
+  fi
+  if [[ "$value" == *".."* ]]; then
+    echo "vibecorp-sandbox: $name にパストラバーサル(..)が含まれています: $value" >&2
+    exit 1
+  fi
+  # 空白・クォート・セミコロン・バックスラッシュ・バッククォート等の危険文字を拒否
+  case "$value" in
+    *[[:space:]]*|*\"*|*\'*|*\;*|*\|*|*\&*|*\`*|*\$*|*\\*)
+      echo "vibecorp-sandbox: $name に危険文字が含まれています: $value" >&2
+      exit 1
+      ;;
+  esac
+}
+
+# ディレクトリを正規化する（symlink を解決して物理パスを返す）
+#
+# 目的:
+#   $PWD / $HOME / $TMPDIR が symlink 経由で別ディレクトリを指す場合でも、
+#   sandbox 境界の判定を canonical path で行うため。
+#   例: macOS の $TMPDIR は `/var/folders/.../T/` だが、これは `/private/var/...` の
+#   symlink。両者を混在比較すると包含判定が崩れる。
+canonicalize_dir() {
+  local p="$1"
+  local name="$2"
+  if [[ -z "$p" ]]; then
+    echo "vibecorp-sandbox: canonicalize_dir: $name が空です" >&2
+    exit 1
+  fi
+  if [[ ! -d "$p" ]]; then
+    echo "vibecorp-sandbox: $name のディレクトリが存在しません: $p" >&2
+    exit 1
+  fi
+  (cd "$p" && pwd -P)
+}
+
+case "$OS" in
+  Darwin)
+    if [[ ! -f "$PROFILE" ]]; then
+      echo "vibecorp-sandbox: sandbox プロファイルが見つかりません: $PROFILE" >&2
+      exit 1
+    fi
+
+    # sandbox-exec に渡す前に WORKTREE / HOME / DARWIN_TMPDIR を検証
+    # 1) raw 値の書式チェック（空文字 / 非絶対パス / ルート / .. / 危険文字）
+    WORKTREE_RAW="$PWD"
+    HOME_RAW="${HOME:-}"
+    DARWIN_TMPDIR_RAW="${TMPDIR:-/tmp}"
+
+    validate_abs_path "$WORKTREE_RAW" "WORKTREE"
+    validate_abs_path "$HOME_RAW" "HOME"
+    validate_abs_path "$DARWIN_TMPDIR_RAW" "DARWIN_TMPDIR"
+
+    # 2) symlink を解決して canonical path に正規化
+    #    symlink 経由で HOME を別ディレクトリに飛ばして sandbox 境界をすり抜ける攻撃を防ぐ
+    WORKTREE_VALUE="$(canonicalize_dir "$WORKTREE_RAW" "WORKTREE")"
+    HOME_VALUE="$(canonicalize_dir "$HOME_RAW" "HOME")"
+    DARWIN_TMPDIR_VALUE="$(canonicalize_dir "$DARWIN_TMPDIR_RAW" "DARWIN_TMPDIR")"
+
+    # 3) canonicalize 後の値も危険文字・ルートを再検証
+    validate_abs_path "$WORKTREE_VALUE" "WORKTREE (canonicalized)"
+    validate_abs_path "$HOME_VALUE" "HOME (canonicalized)"
+    validate_abs_path "$DARWIN_TMPDIR_VALUE" "DARWIN_TMPDIR (canonicalized)"
+
+    # 4) WORKTREE を HOME 自体にする設定は sandbox の書込境界を
+    #    ホームディレクトリ全体に広げてしまうため拒否する
+    if [[ "$WORKTREE_VALUE" == "$HOME_VALUE" ]]; then
+      echo "vibecorp-sandbox: WORKTREE を HOME と同一にはできません: $WORKTREE_VALUE" >&2
+      exit 1
+    fi
+
+    # 5) WORKTREE が HOME を包含する（WORKTREE=/Users、WORKTREE が HOME の祖先 等）設定は、
+    #    (subpath (param "WORKTREE")) により ~/.ssh / ~/.aws / ~/.gnupg まで RW になるため拒否する
+    case "${HOME_VALUE}/" in
+      "${WORKTREE_VALUE}/"*)
+        echo "vibecorp-sandbox: WORKTREE が HOME を包含しています: WORKTREE=$WORKTREE_VALUE, HOME=$HOME_VALUE" >&2
+        exit 1
+        ;;
+    esac
+
+    # macOS の sandbox-exec でコマンドを実行
+    # - -f: プロファイルファイル
+    # - -D KEY=VALUE: プロファイル内の (param "KEY") で参照される値
+    # - env VIBECORP_SANDBOXED=1: 子プロセスに二重サンドボックス防止フラグを伝播
+    #   （env var は信頼境界ではない。claude シム側で PPID 検証と AND 取って判定する）
+    exec /usr/bin/sandbox-exec \
+      -f "$PROFILE" \
+      -D "WORKTREE=$WORKTREE_VALUE" \
+      -D "HOME=$HOME_VALUE" \
+      -D "DARWIN_TMPDIR=$DARWIN_TMPDIR_VALUE" \
+      env VIBECORP_SANDBOXED=1 "$@"
+    ;;
+  Linux)
+    echo "vibecorp-sandbox: Linux 向け実装は Phase 2 で追加されます（bwrap を使用予定）。" >&2
+    exit 2
+    ;;
+  *)
+    echo "vibecorp-sandbox: 未対応 OS: $OS（Phase 2 以降で検討）。" >&2
+    exit 2
+    ;;
+esac
