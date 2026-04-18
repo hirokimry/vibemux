@@ -1,8 +1,8 @@
 # vibecorp.lock — 自動生成、手動編集禁止
-version: 0.17.8
-installed_at: 2026-04-18T15:29:20+00:00
+version: 0.17.9
+installed_at: 2026-04-18T16:26:19+00:00
 preset: full
-vibecorp_commit: 98acd2e
+vibecorp_commit: e06a29d
 files:
   hooks:
     - block-api-bypass.sh
@@ -67,28 +67,9 @@ files:
     - shell.md
     - testing.md
     - use-skills.md
-  issue_templates:
-    - bug_report.md
-    - config.yml
-    - feature_request.md
-  docs:
-    - POLICY.md
-    - SECURITY.md
-    - ai-organization.md
-    - cost-analysis.md
-    - design-philosophy.md
-    - specification.md
-  knowledge:
-    - accounting/cost-audit-template.md
-    - accounting/cost-principles.md
-    - sm/organization.md
-    - cpo/product-principles.md
-    - cpo/decisions.md
-    - security/security-principles.md
-    - security/security-audit-template.md
-    - cto/tech-principles.md
-    - cto/decisions.md
-    - legal/legal-principles.md
+  issue_templates: []
+  docs: []
+  knowledge: []
   base_hashes:
     .gitignore: 35f459996a503492dfd751114db708b5584f061a9fb2087bf945606c3b0dcd35
     bin/activate.sh: b27b3a159aa8dfde407cd91cd3abe9c7602d274ea3abc9fde4529121c636b696
