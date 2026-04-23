@@ -4,7 +4,7 @@ set -euo pipefail
 VERSION="0.1.0"
 
 # ── Configuration ──────────────────────────────────────────────
-VIBEMUX_PANE_TOP_LEFT="${VIBEMUX_PANE_TOP_LEFT:-yazi}"
+VIBEMUX_PANE_TOP_LEFT="${VIBEMUX_PANE_TOP_LEFT:-}"
 VIBEMUX_PANE_BOTTOM_LEFT="${VIBEMUX_PANE_BOTTOM_LEFT:-lazygit}"
 VIBEMUX_PANE_RIGHT="${VIBEMUX_PANE_RIGHT:-}"
 VIBEMUX_RIGHT_RATIO="${VIBEMUX_RIGHT_RATIO:-70}"
@@ -37,7 +37,7 @@ Layout:
   └──────────┴─────────────────────┘
 
 Configuration (environment variables):
-  VIBEMUX_PANE_TOP_LEFT      Command for top-left pane     (default: yazi)
+  VIBEMUX_PANE_TOP_LEFT      Command for top-left pane     (default: shell)
   VIBEMUX_PANE_BOTTOM_LEFT   Command for bottom-left pane  (default: lazygit)
   VIBEMUX_PANE_RIGHT         Command for right pane        (default: shell)
   VIBEMUX_RIGHT_RATIO        Right pane width percentage    (default: 70)
