@@ -47,7 +47,7 @@ Customize pane commands via environment variables or a config file at `~/.config
 
 | Variable | Description | Default |
 |---|---|---|
-| `VIBEMUX_PANE_TOP_LEFT` | Top-left pane command | `yazi` |
+| `VIBEMUX_PANE_TOP_LEFT` | Top-left pane command | *(shell)* |
 | `VIBEMUX_PANE_BOTTOM_LEFT` | Bottom-left pane command | `lazygit` |
 | `VIBEMUX_PANE_RIGHT` | Right pane command | *(shell)* |
 | `VIBEMUX_RIGHT_RATIO` | Right pane width (%) | `70` |

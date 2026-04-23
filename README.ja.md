@@ -47,7 +47,7 @@ vibemux list                       # アクティブなセッション一覧
 
 | 変数 | 説明 | デフォルト |
 |---|---|---|
-| `VIBEMUX_PANE_TOP_LEFT` | 左上ペインのコマンド | `yazi` |
+| `VIBEMUX_PANE_TOP_LEFT` | 左上ペインのコマンド | *(シェル)* |
 | `VIBEMUX_PANE_BOTTOM_LEFT` | 左下ペインのコマンド | `lazygit` |
 | `VIBEMUX_PANE_RIGHT` | 右ペインのコマンド | *(シェル)* |
 | `VIBEMUX_RIGHT_RATIO` | 右ペインの幅 (%) | `70` |
