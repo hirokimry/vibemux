@@ -71,8 +71,28 @@ echo
 
 # ── Invalid Directory ────────────────────────────────────────
 echo "[invalid directory]"
-assert_exit "new with nonexistent directory exits 1" 1 "$VIBEMUX" new testsession /nonexistent/path
-assert_output_contains "new with nonexistent dir shows error" "directory not found" "$VIBEMUX" new testsession /nonexistent/path
+
+# Unset TMUX to bypass the nested session check and test directory validation
+desc="new with nonexistent directory exits 1"
+actual=0
+(unset TMUX; "$VIBEMUX" new testsession /nonexistent/path) >/dev/null 2>&1 || actual=$?
+if [[ "$actual" -eq 1 ]]; then
+  echo "  PASS: $desc"
+  ((passed++))
+else
+  echo "  FAIL: $desc (expected exit 1, got $actual)"
+  ((failed++))
+fi
+
+desc="new with nonexistent dir shows error"
+output=$(unset TMUX; "$VIBEMUX" new testsession /nonexistent/path 2>&1) || true
+if echo "$output" | grep -qE "directory not found"; then
+  echo "  PASS: $desc"
+  ((passed++))
+else
+  echo "  FAIL: $desc (expected pattern 'directory not found' not found in output)"
+  ((failed++))
+fi
 echo
 
 # ── Attach Nonexistent Session ───────────────────────────────
@@ -84,6 +104,45 @@ echo
 echo "[env var defaults]"
 assert_output_contains "usage shows VIBEMUX_PANE_TOP_LEFT" "VIBEMUX_PANE_TOP_LEFT" "$VIBEMUX" help
 assert_output_contains "usage shows VIBEMUX_CONFIG" "VIBEMUX_CONFIG" "$VIBEMUX" help
+echo
+
+# ── Nested tmux session detection ────────────────────────────
+echo "[nested tmux detection]"
+
+# Test: TMUX set → new should fail with exit 1
+desc="new inside tmux session exits 1"
+actual=0
+TMUX=fake_tmux_session "$VIBEMUX" new testsession >/dev/null 2>&1 || actual=$?
+if [[ "$actual" -eq 1 ]]; then
+  echo "  PASS: $desc"
+  ((passed++))
+else
+  echo "  FAIL: $desc (expected exit 1, got $actual)"
+  ((failed++))
+fi
+
+# Test: TMUX set → new should show error message
+desc="new inside tmux session shows error message"
+output=$(TMUX=fake_tmux_session "$VIBEMUX" new testsession 2>&1) || true
+if echo "$output" | grep -q "already inside a tmux session"; then
+  echo "  PASS: $desc"
+  ((passed++))
+else
+  echo "  FAIL: $desc (expected 'already inside a tmux session' in output)"
+  ((failed++))
+fi
+
+# Test: TMUX unset → new should not fail due to TMUX check
+# (it will fail for other reasons like no tmux server, but not the TMUX check)
+desc="new without TMUX does not show nested session error"
+output=$(unset TMUX; "$VIBEMUX" new testsession 2>&1) || true
+if echo "$output" | grep -q "already inside a tmux session"; then
+  echo "  FAIL: $desc (got nested session error when TMUX is unset)"
+  ((failed++))
+else
+  echo "  PASS: $desc"
+  ((passed++))
+fi
 echo
 
 # ── Unknown Subcommand ───────────────────────────────────────
