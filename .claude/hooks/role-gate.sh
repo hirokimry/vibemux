@@ -1,9 +1,12 @@
 #!/bin/bash
 # role-gate.sh — エージェントが管轄外のファイルを編集することをブロックするフック
-# ロールファイル($CLAUDE_PROJECT_DIR/.claude/state/agent-role)にロール名が書かれている場合のみ動作
+# ロールファイル(~/.cache/vibecorp/state/<repo-id>/agent-role)にロール名が書かれている場合のみ動作
 # ロールファイルが存在しなければスキップ（通常セッション＝人間操作時は制約なし）
 
 set -euo pipefail
+
+# shellcheck source=../lib/common.sh
+source "${CLAUDE_PROJECT_DIR:-.}/.claude/lib/common.sh"
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
@@ -13,7 +16,7 @@ if [ -z "$FILE_PATH" ]; then
 fi
 
 # ロールファイルからロール名を読み取る
-ROLE_FILE="${CLAUDE_PROJECT_DIR:-.}/.claude/state/agent-role"
+ROLE_FILE="$(vibecorp_state_path agent-role)"
 if [ ! -f "$ROLE_FILE" ]; then
   exit 0
 fi

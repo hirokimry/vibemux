@@ -50,7 +50,7 @@ claude -p --permission-mode dontAsk --verbose "/ship-parallel <Issue URL 1> <Iss
 ```
 
 - `-p` (print mode): 非対話、stdout に結果を出力して終了
-- `--permission-mode dontAsk`: hook（`team-auto-approve.sh`）が permission を制御する。親セッションへの承認要求を抑制（参照: #260）
+- `--permission-mode dontAsk`: 親セッションへの承認要求を抑制する。必要に応じて `--dangerously-skip-permissions` と併用（参照: `docs/design-philosophy.md` の「承認フローへの非介入」、#260）
 - `--verbose`: デバッグ情報を出力
 
 起動後、PID を記録する。
@@ -61,7 +61,8 @@ command-log の最終タイムスタンプを 30 秒間隔でポーリングし�
 
 ```bash
 # 最終タイムスタンプを取得
-tail -1 "$CLAUDE_PROJECT_DIR/.claude/state/command-log" | cut -f1
+source "$CLAUDE_PROJECT_DIR"/.claude/lib/common.sh
+tail -1 "$(vibecorp_state_path command-log)" | cut -f1
 ```
 
 #### 判定ロジック
@@ -87,20 +88,22 @@ gh pr list --state open --head "dev/{番号}" --json number --jq '.[0].number'
 stuck を検出したら、以下の情報を収集して保存する。
 
 ```bash
-mkdir -p "$CLAUDE_PROJECT_DIR/.claude/state/spike-loop/run_{N}"
+source "$CLAUDE_PROJECT_DIR"/.claude/lib/common.sh
+RUN_DIR="$(vibecorp_state_path spike-loop)/run_{N}"
+mkdir -p "$RUN_DIR"
 ```
 
 収集する情報:
 
 ```bash
 # プロセスツリー
-ps aux | grep claude > "$CLAUDE_PROJECT_DIR/.claude/state/spike-loop/run_{N}/processes.txt"
+ps aux | grep claude > "$RUN_DIR/processes.txt"
 
 # command-log の末尾 50 行
-tail -50 "$CLAUDE_PROJECT_DIR/.claude/state/command-log" > "$CLAUDE_PROJECT_DIR/.claude/state/spike-loop/run_{N}/command-log-tail.txt"
+tail -50 "$(vibecorp_state_path command-log)" > "$RUN_DIR/command-log-tail.txt"
 
 # worktree 一覧
-git worktree list > "$CLAUDE_PROJECT_DIR/.claude/state/spike-loop/run_{N}/worktrees.txt"
+git worktree list > "$RUN_DIR/worktrees.txt"
 ```
 
 ### 5. kill + cleanup
@@ -176,7 +179,7 @@ git branch -d <branch>
 - 最終コマンドの実行時刻: {タイムスタンプ}
 - 無音時間: {分}
 - 推定原因: {分析結果}
-- スナップショット: .claude/state/spike-loop/run_{N}/
+- スナップショット: ~/.cache/vibecorp/state/<repo-id>/spike-loop/run_{N}/
 
 ### 総合
 - 実行回数: {N}/{最大}
@@ -198,7 +201,7 @@ stuck または失敗の場合、最大ループ回数に達していなけれ�
 - `--force`、`--hard`、`--no-verify` は使用しない
 - 修正の自動適用は行わない（分析レポートの出力まで）
 - 最大ループ回数のデフォルトは 3 回
-- findings は `.claude/state/spike-loop/` に保存する（gitignored）
+- findings は `~/.cache/vibecorp/state/<repo-id>/spike-loop/` に保存する（リポジトリ外なので自動的に git 管理対象外）
 - **jq では string interpolation `\(...)` を使わない** — Bash 上で `\` がエスケープ文字、`()` がサブシェルとして解釈され、意図しない展開やパースエラーを引き起こすため。必ず `+` で結合する
 - **コマンドをそのまま実行する** — `2>/dev/null`、`|| echo`、`; echo` 等のリダイレクトやフォールバックを付加しない
 - **Bash は 1 コマンド 1 呼び出しに分割する** — compound command は Claude Code 本体の built-in security check で止められるため（参照: #258）

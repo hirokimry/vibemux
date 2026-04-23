@@ -58,10 +58,10 @@ git checkout -b dev/{番号}_{要約}
 
 Issue の本文・完了条件を読み込み、コードベースを調査して実装計画を作成する。
 
-計画は以下に出力する:
+計画は以下に出力する（`/plan` スキルが `vibecorp_plans_dir` 経由で配置する）:
 
 ```text
-.claude/plans/{branch_name}.md
+~/.cache/vibecorp/plans/<repo-id>/{branch_name}.md
 ```
 
 計画には以下を含める:

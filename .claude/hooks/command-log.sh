@@ -1,9 +1,12 @@
 #!/bin/bash
 # command-log.sh — 全 Bash コマンドをログファイルに記録する PreToolUse フック
-# ログは $CLAUDE_PROJECT_DIR/.claude/state/command-log に追記される
+# ログは ~/.cache/vibecorp/state/<repo-id>/command-log に追記される（Issue #334）
 # 判定は返さない（ログ記録のみ）
 
 set -euo pipefail
+
+# shellcheck source=../lib/common.sh
+source "${CLAUDE_PROJECT_DIR:-.}/.claude/lib/common.sh"
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
@@ -19,9 +22,8 @@ if [ -z "$COMMAND" ]; then
 fi
 
 # state ディレクトリを作成してログファイルに追記
-STATE_DIR="${CLAUDE_PROJECT_DIR:-.}/.claude/state"
-mkdir -p "$STATE_DIR"
-LOG_FILE="${STATE_DIR}/command-log"
+vibecorp_state_mkdir >/dev/null
+LOG_FILE="$(vibecorp_state_path command-log)"
 
 # タイムスタンプ + コマンドをログに追記
 printf '%s\t%s\n' "$(date +%Y-%m-%dT%H:%M:%S)" "$COMMAND" >> "$LOG_FILE"
