@@ -28,11 +28,20 @@ vibemux は tmux セッションランチャーであり、ユーザーのシェ
 
 ### 設定ファイルの安全性
 
-vibemux は `~/.config/vibemux/config` を `source` で読み込むため、任意コード実行のリスクがある。
+vibemux は `~/.config/vibemux/config` を `source` で読み込むため、任意コード実行のリスクがある（`vibemux:15-18`）。
+
+```bash
+VIBEMUX_CONFIG="${VIBEMUX_CONFIG:-$HOME/.config/vibemux/config}"
+if [[ -f "$VIBEMUX_CONFIG" ]]; then
+  source "$VIBEMUX_CONFIG"
+fi
+```
+
 緩和策:
 - 設定ファイルはユーザー自身が作成・管理する前提（他者が書き込み可能なパスは使わない）
 - `VIBEMUX_CONFIG` で指定されたパスが存在しない場合はスキップ（既に実装済み）
 - 設定ファイルの内容は変数代入のみを想定。関数定義やコマンド実行は非推奨
+- `VIBEMUX_CONFIG` 環境変数で任意パスを指定可能なため、信頼できないパスを指定させない運用が必要
 
 ### コーディング規約
 

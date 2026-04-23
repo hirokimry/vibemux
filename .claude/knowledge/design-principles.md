@@ -28,6 +28,16 @@ vibemux は単一の bash スクリプトで完結する。外部依存は tmux 
 - サブコマンド追加は `cmd_xxx()` 関数 + `case` 文への追加
 - 設定項目追加は環境変数 → config → デフォルトの3段階を踏襲
 
+## 意図的な重複
+
+### git hooks の secret_patterns 関数
+
+`.githooks/pre-commit` と `.githooks/pre-push` に同一の `secret_patterns()` 関数が存在する。DRY 違反だが意図的。フック間で `source` 依存を作ると、一方のフックが壊れた場合にもう一方も巻き込む。各フックは独立して動作すべき。
+
+### vibemux 本体の `2>/dev/null`
+
+`vibemux` スクリプト内の `tmux has-session 2>/dev/null` や `tmux list-sessions 2>/dev/null` は、`docs/design-philosophy.md` の「コマンドリダイレクトフォールバック禁止」ルールの対象外。このルールは vibecorp が管理するスキル・フック内のコマンドに適用されるもので、vibemux 本体（プロダクトコード）の tmux コマンドは通常のシェルスクリプト慣習に従う。
+
 ## やらないこと
 
 - tmux 以外のマルチプレクサ対応（フォーカスを絞る）
