@@ -26,7 +26,7 @@ git diff --name-only
 
 ### 2. 対象外の判定
 
-以下のケースは整合性チェック不要。ステップ5のスタンプ発行に進んでスキップする:
+以下のケースは整合性チェック不要。エージェント起動をスキップしてステップ6のスタンプ発行に進む:
 
 - `docs/` や `knowledge/` や `README.md` のみの変更（コードとの整合問題が発生しない）
 - `.gitignore` 等の軽微な変更のみ
@@ -76,6 +76,8 @@ git diff main...HEAD -U0 | grep -iE 'API call|model:|claude -p|ANTHROPIC_API_KEY
 該当した領域のみ起動する（複数ヒット時は該当全 C*O を並列）。`standard` / `minimal` プリセットでは C*O の自動起動は行わない（既存挙動維持）。
 
 #### 起動方法
+
+各エージェントは `name` を指定した永続 teammate として起動する（結果返却後も idle で残るため、ステップ5で必ず shutdown する）。起動した `name` はステップ5で参照するため全て保持しておく。
 
 各エージェントに以下を渡して Agent ツールで起動する:
 
@@ -137,7 +139,20 @@ git diff main...HEAD -U0 | grep -iE 'API call|model:|claude -p|ANTHROPIC_API_KEY
 - ❌ 矛盾あり → /sync-edit を実行してください
 ```
 
-### 5. スタンプ発行
+### 5. 起動エージェントの shutdown
+
+ステップ3で起動した全エージェントへ `shutdown_request` を SendMessage で送信し、チームを解散する。
+`name` 付きで起動された teammate は結果を返却した後も idle 状態でペインを占有し続けるため、**総合判定（✅ / ⚠️ / ❌）にかかわらず必ず送信する**。
+
+```json
+{"to": "<エージェント名>", "message": {"type": "shutdown_request", "reason": "sync-check 完了"}}
+```
+
+- 起動した全エージェントに対して 1 件ずつ送信する（同一メッセージで並列送信して構わない）
+- teammate 側は `shutdown_response` を返した時点で terminate されるため、メイン側での応答待ちコードは不要
+- ステップ2で整合性チェックをスキップした場合（エージェント未起動）は、本ステップをスキップしてステップ6へ進む
+
+### 6. スタンプ発行
 
 **総合判定が ✅ の場合のみ** スタンプを発行する。スタンプは `~/.cache/vibecorp/state/<repo-id>/` 配下に作成され、`.claude/` 配下への書込確認プロンプトを回避する:
 

@@ -53,7 +53,11 @@ model: sonnet
 - `MVV.md`（必須・最初に読む）
 - `docs/specification.md`（技術スタック・アーキテクチャ部分）
 - `.claude/knowledge/cto/tech-principles.md`（存在すれば）
-- `.claude/knowledge/cto/decisions.md`（存在すれば）
+- `.claude/knowledge/cto/decisions-index.md`（存在すれば。過去判断の目次）
+
+インデックスから今回の Issue/トピックに関連する過去エントリが見つかった場合、対応するアーカイブファイル（`.claude/knowledge/cto/decisions/YYYY-QN.md`）を追加で Read する。関連がなければインデックスのみで十分。
+
+**レガシー互換**: `decisions-index.md` が存在せず `.claude/knowledge/cto/decisions.md`（旧形式）のみ存在する場合は旧ファイルを Read する。両方存在する場合は新形式（decisions-index.md）を優先する。
 
 ### 2. レビュー観点
 
@@ -106,7 +110,21 @@ model: sonnet
 
 ### 4. 判断の記録
 
-`.claude/knowledge/cto/decisions.md` に追記する（ファイルがなければ作成する）。
+判断を以下の 2 箇所に記録する:
+
+1. `.claude/knowledge/cto/decisions/{YYYY-QN}.md` に詳細を追記
+   - ディレクトリ `.claude/knowledge/cto/decisions/` が存在しなければ作成する
+   - ファイルがなければ新規作成（H1 ヘッダ `# CTO 判断記録 {YYYY-QN}` を付与）
+   - YYYY-QN は判断日付の四半期（01-03 → Q1、04-06 → Q2、07-09 → Q3、10-12 → Q4）
+2. `.claude/knowledge/cto/decisions-index.md` のエントリセクションに 1 行サマリを追記
+   - 書式: `- YYYY-MM-DD — Issue #NNN または トピック名 — 結論の一行要約`
+   - 新しい順で上に追加
+   - `decisions-index.md` が存在する場合は追記する
+   - `decisions-index.md` と `decisions.md` が両方不在の場合のみ新規作成（テンプレートと同形式）
+
+**書き込み順序**: アーカイブ → インデックスの順で書く。アーカイブ成功後に index 追記が失敗しても、次回 step 1 で index エントリ欠落を検知し補完できる（逆順だと index のみ更新され archive が無い不整合になる）。
+
+**レガシー互換**: `decisions-index.md` が存在せず `decisions.md` のみ存在する場合は、`decisions.md` へ追記する（このケースでは `decisions-index.md` は作成しない）。移行手順は `docs/migration-decisions-index.md` 参照。
 
 記録すべき内容：
 - 技術的な判断とその理由

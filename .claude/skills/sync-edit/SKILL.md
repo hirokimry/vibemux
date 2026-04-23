@@ -56,8 +56,9 @@ description: >
 ## 最初にやること（必須）
 以下のコマンドを実行してロールを宣言してください。これにより管轄ファイルの編集権限が付与されます。
 
-mkdir -p "$CLAUDE_PROJECT_DIR/.claude/state"
-echo "{role_id}" > "$CLAUDE_PROJECT_DIR/.claude/state/agent-role"
+source "$CLAUDE_PROJECT_DIR"/.claude/lib/common.sh
+stamp_dir="$(vibecorp_state_mkdir)"
+echo "{role_id}" > "${stamp_dir}/agent-role"
 
 role_id: cto / cpo / legal / accounting / sm
 
@@ -79,7 +80,8 @@ role_id: cto / cpo / legal / accounting / sm
 ## 終了時（必須）
 編集完了後、ロールファイルを削除してください。
 
-rm -f "$CLAUDE_PROJECT_DIR/.claude/state/agent-role"
+source "$CLAUDE_PROJECT_DIR"/.claude/lib/common.sh
+rm -f "$(vibecorp_state_path agent-role)"
 
 ## 出力
 - 編集したファイルと変更内容の要約

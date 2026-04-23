@@ -173,7 +173,8 @@ git worktree add "../${project}.worktrees/dev_${Issue番号}_${要約}" -b "dev/
 
 # .claude/ ディレクトリを同期（skills, hooks, settings.json 等）
 # state/ は worktree ごとに独自に作成・管理されるため除外（main の state を持ち込まない）
-rsync -a --exclude=state/ .claude/ "../${project}.worktrees/dev_${Issue番号}_${要約}/.claude/"
+# plans/ は XDG 準拠で ~/.cache/vibecorp/plans/<repo-id>/ に配置されるため除外（旧 .claude/plans/ の残置ファイルを worktree に持ち込むと子 Agent が誤認して permission prompt で stuck する: #372）
+rsync -a --exclude=state/ --exclude=plans/ .claude/ "../${project}.worktrees/dev_${Issue番号}_${要約}/.claude/"
 ```
 
 worktree 作成の確認:
@@ -190,7 +191,7 @@ git worktree list
 並列グループ内の各 Issue に対して、Agent ツールを起動する。
 **同一グループの全 Agent は1つのメッセージで同時に起動する**（並列実行を最大化）。
 
-Agent 起動時は `mode: "dontAsk"` を指定する。デフォルト mode では teammate のツール呼び出しが親セッションに承認要求を送り、hook の `permissionDecision: "allow"` が上書きされるため。`dontAsk` により hook（`team-auto-approve.sh`）が permission を制御する（参照: #260）。
+Agent 起動時は `mode: "dontAsk"` を指定する。デフォルト mode では teammate のツール呼び出しが親セッションに承認要求を送り、並列実行時に承認ダイアログが多発するため。`dontAsk` により teammate 側の承認要求を抑制できる。`--dangerously-skip-permissions` と組み合わせることで並列実行時の承認負荷を下げる（参照: `docs/design-philosophy.md` の「承認フローへの非介入」、#260）。
 
 各 Agent に渡すプロンプト:
 

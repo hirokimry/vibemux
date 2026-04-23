@@ -63,8 +63,9 @@ forbidden_targets のデフォルト値:
 ### 3. diagnose-active スタンプ作成
 
 ```bash
-mkdir -p "$CLAUDE_PROJECT_DIR/.claude/state"
-touch "$CLAUDE_PROJECT_DIR/.claude/state/diagnose-active"
+source "$CLAUDE_PROJECT_DIR"/.claude/lib/common.sh
+stamp_dir="$(vibecorp_state_mkdir)"
+touch "${stamp_dir}/diagnose-active"
 ```
 
 このスタンプが存在する間、diagnose-guard.sh が保護ファイルへの変更を deny する。
@@ -221,7 +222,8 @@ gh issue list --label "diagnose" --state all --json createdAt --jq '[.[] | selec
 ### 10. diagnose-active スタンプ削除
 
 ```bash
-rm -f "$CLAUDE_PROJECT_DIR/.claude/state/diagnose-active"
+source "$CLAUDE_PROJECT_DIR"/.claude/lib/common.sh
+rm -f "$(vibecorp_state_path diagnose-active)"
 ```
 
 ### 11. 結果レポート

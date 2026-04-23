@@ -80,6 +80,8 @@ fi
 
 ### 4. コンテキスト切り詰め + 専門職エージェントに一括委任
 
+**重要**: 各エージェントは `name` を指定した永続 teammate として起動する。起動した `name` はステップ4.5で shutdown 対象として参照するため保持しておく。
+
 変更内容と会話差分のトークン数を概算する（`VIBECORP_TOKEN_RATIO` × 文字数、保守値 0.8）。**1 session-harvest 実行 = C*O 最大 5 呼出 + 30K トークン**に制限する。30K 超過時は新しい差分を優先して切り詰め、stderr に「コンテキスト超過のため古い差分を次回に繰越」と通知する。
 
 CTO / CPO / CISO / CFO / CLO の **5 エージェントを並列起動** する（レガシーな順次起動は廃止、ファイル競合は buffer worktree 内の担当ディレクトリ分離で回避）。
@@ -125,6 +127,17 @@ mkdir -p ${BUFFER_DIR}/.claude/knowledge/{role}/
 - 反映したファイルと内容の要約
 - 反映不要と判断した知見とその理由
 ````
+
+### 4.5. 起動エージェントの shutdown
+
+ステップ4で起動した全エージェントへ `shutdown_request` を SendMessage で送信し、チームを解散する。
+`name` 付きで起動された teammate は結果返却後も idle 状態でペインを占有し続けるため、**反映結果の成否にかかわらず必ず送信する**。
+
+```json
+{"to": "<エージェント名>", "message": {"type": "shutdown_request", "reason": "session-harvest 完了"}}
+```
+
+teammate 側は `shutdown_response` を返した時点で terminate されるため、メイン側での応答待ちコードは不要。
 
 ### 5. commit + push
 

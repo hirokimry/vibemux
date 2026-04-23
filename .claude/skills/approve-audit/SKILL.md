@@ -19,10 +19,12 @@ description: "コマンドログを棚卸しし、settings.local.json の allow 
 
 ログファイルを読み込む。
 
-ログファイルパス: `$CLAUDE_PROJECT_DIR/.claude/state/command-log`
+ログファイルパス: `~/.cache/vibecorp/state/<repo-id>/command-log`（`.claude/lib/common.sh` の `vibecorp_state_path command-log` で取得）
 
 ```bash
-cat "$CLAUDE_PROJECT_DIR/.claude/state/command-log"
+source "$CLAUDE_PROJECT_DIR"/.claude/lib/common.sh
+log_file="$(vibecorp_state_path command-log)"
+cat "$log_file"
 ```
 
 ログファイルが存在しない、または空の場合は「記録されたコマンドがありません」と報告して終了する。
@@ -113,7 +115,8 @@ cat "$CLAUDE_PROJECT_DIR"/.claude/settings.local.json
 ユーザーに「ログファイルを削除しますか？」と確認し、承認された場合のみ削除する:
 
 ```bash
-rm -f "$CLAUDE_PROJECT_DIR/.claude/state/command-log"
+source "$CLAUDE_PROJECT_DIR"/.claude/lib/common.sh
+rm -f "$(vibecorp_state_path command-log)"
 ```
 
 ## 8. 結果報告

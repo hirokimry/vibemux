@@ -1,8 +1,8 @@
 # vibecorp.lock — 自動生成、手動編集禁止
-version: 0.17.9
-installed_at: 2026-04-18T16:26:19+00:00
+version: 0.19.2
+installed_at: 2026-04-23T14:05:55+00:00
 preset: full
-vibecorp_commit: e06a29d
+vibecorp_commit: b1ba324
 files:
   hooks:
     - block-api-bypass.sh
@@ -13,7 +13,6 @@ files:
     - review-gate.sh
     - role-gate.sh
     - sync-gate.sh
-    - team-auto-approve.sh
   skills:
     - approve-audit
     - audit-cost
@@ -69,22 +68,24 @@ files:
     - use-skills.md
   issue_templates: []
   docs: []
-  knowledge: []
+  knowledge:
+    - cpo/decisions-index.md
+    - cto/decisions-index.md
   base_hashes:
-    .gitignore: 35f459996a503492dfd751114db708b5584f061a9fb2087bf945606c3b0dcd35
+    .gitignore: 574f473b38b319d475f25a21253dca92801289ec5be6c78eff45ca6023b8496d
     bin/activate.sh: b27b3a159aa8dfde407cd91cd3abe9c7602d274ea3abc9fde4529121c636b696
     bin/claude: 07315416982335f11cedce5ae8fb27ca1c3eb836329d21707df92bf22095631c
     bin/vibecorp-sandbox: 1d558099d2a82eaf1d119201db9e0a8b2c1f106dabb8fe5cd1d964d024ddc455
     hooks/block-api-bypass.sh: 87ab95cc06be8a3b189efa11d779233870afd6fb9d11c1e0d36f69ffe0e00e91
-    hooks/command-log.sh: 12c206ce19ef05917fec85eba4a349baec806eab1d053faf8864e4ccc8c71e6c
-    hooks/diagnose-guard.sh: 7bf3f91906bd29730242d38cfc699b1452f0751b0d13dcaeb54bb3cd464c084a
+    hooks/command-log.sh: 2ffd0d702c91fb8114591555d3bccb32ec84d9609723c7282b4d8215851a174d
+    hooks/diagnose-guard.sh: 0284eb7b2b7ddea8ecafed1fe997462f3310cd1921cdbae6533a8402d13ff59a
     hooks/protect-branch.sh: a88ae336afb8aba654952dac5021f213110c9c272803aae0098458dcb4798b06
     hooks/protect-files.sh: 037456f1eada4d3e466e77ca0ae9402afedfa549cf9b59826ee941166da68a87
     hooks/review-gate.sh: 0bce7f81b024030034d916e89b067d2d879c6d6e380f17e01d3816fade2f5352
-    hooks/role-gate.sh: 3969a46ec4951ddd6fa875274519af428b6dbe67031d6702b8c7b0a2e67f8b4e
+    hooks/role-gate.sh: 8c68eb8a84d88b7cd768c78ab1a2976f252fddaf49ff4b2a37acd828be8f7f06
     hooks/sync-gate.sh: 6228603e3102a6aa99df4a5d3a468715b1511442f9eee973d432635aa97de5a3
     hooks/team-auto-approve.sh: e9684eebebac752e71b0b54370ec15d725a5794c28caa775554537565e8323d4
-    rules/autonomous-restrictions.md: 9fdf2e08c0621e5d288e6e76b62e1c485b9de042f073df9b022c6e152c7e16f4
+    rules/autonomous-restrictions.md: 0bf2186620eb421dcc002018b2afbb43198b78d98e18a6bebab2ce43553890b7
     rules/comments.md: a8bdaf0c489fcef2981336563418d1c077aa54d19390a2a287abe61f87fa049a
     rules/markdown.md: b8699881fd9ceac44f7ed966ebd992f6014fe290290bd2a6bbae45a6efcf0c1c
     rules/mvv.md: 5818a1129d7ecf373b91e4437f982def9a1d850dbfd566285e8c2c9f34c14033
@@ -93,30 +94,30 @@ files:
     rules/testing.md: 2e44f995e2df6b5dd2d5e844045ed79e1912676598b6cc34ad705d2f760a09ed
     rules/use-skills.md: e3cb069dd6925fb0089dff86a94a443dea2cf76e16bfb39000eb8df26a453a48
     sandbox/claude.sb: 36be01e89de84d93b99ff28b00a9daf8410d4e499832080e634c540d0d685978
-    skills/approve-audit/SKILL.md: 1178d413ee9af094bda21dd8c5a48b7eba4477c3f33da1989558a890917fb0b2
+    skills/approve-audit/SKILL.md: 6aec41571352a0066ee80ba10b4270dd92e95c8716216fe6fe3adbaf66e9c899
     skills/audit-cost/SKILL.md: 5ea88c61b8cd3ec6b002670b28ffc11fef30aa114c4b3732b566d83a1d580549
     skills/audit-security/SKILL.md: 490e1b04295007d60f0592ed9b2ee4e8e2019da341496077cd7b4980700b0827
-    skills/autopilot/SKILL.md: 20969f51875c3e77e1bc9fa4aff64f18a697b0c1fd00f0ea71cdbf598305f315
+    skills/autopilot/SKILL.md: f0d0824ef373d2df20e12309ce0cbc9e53f4ed709dd0ea7d65b6bbcbd0be7cd7
     skills/branch/SKILL.md: de40d84e712dc66dae4b866a8d7fd2b652d77c6fbf5ead41737a272a6873e1ff
     skills/commit/SKILL.md: 45c12659ddf1877114c0b14c02e39df10aa8cbff7e9b3157338a7f8a2811648b
     skills/context7/SKILL.md: ff98cb68fc02e8e457202ca99a5316e86e12f1b34dd128e64fb366fc656faa70
-    skills/diagnose/SKILL.md: 81f73e505afd0da11ddc011aae8297f945e111ddadb123f9f7cc511f98ac70d9
+    skills/diagnose/SKILL.md: ec389c7e6d9c0946730572216ab25aa1a567db6b13eecc11d611811710c343df
     skills/harvest-all/SKILL.md: 81e3b9601404bace19aab4870a16c529d6e7b80815203460d703f5a013885ead
-    skills/issue/SKILL.md: 94d30a1d6775fe17ab2cb6b83257ec503267fc74985a104eee865503a82af178
+    skills/issue/SKILL.md: bd1f475a37d170c6a6cad9b0cd6ec6847d501d1b7f453473d245d712b9bf1b6a
     skills/knowledge-pr/SKILL.md: e4dba412cfe2c31d168960843901e41f3b6cb9abe3d6216898f096f4817cbc99
-    skills/plan-review-loop/SKILL.md: c3e92156365c9a8dd6081b7b1aa594c7780028da991d9c59751da0b4f1c7dee6
-    skills/plan/SKILL.md: 8a21b1e47b44d737e439ff3f971aad02843ab1abeb085a676657183e8de2b856
+    skills/plan-review-loop/SKILL.md: 962ada92a55f2b3ecd6055e6d7821f380138a2abefffa081ff7cbefa60800613
+    skills/plan/SKILL.md: c26e03a07d2c879151fc3ac2e561c98bb7ab120ebeb28b382a16546e8512c524
     skills/pr-review-fix/SKILL.md: ea28f21a3346904c77631b23f198d4018bfff71faf4ad340eee7ca1e4db4a6a3
     skills/pr-review-loop/SKILL.md: 7be6db29182413251bbe2bb3ec3799de54afea8e751a4f312b0de35a41e9c58e
     skills/pr/SKILL.md: 8bd64c223810997512444239596485a1dd764a59d15060090b7fbb05079a3c6c
-    skills/review-harvest/SKILL.md: aeb64697a09f461380040d50ee3fd89ec89b0aeee1f789071e828eaf17b1387c
+    skills/review-harvest/SKILL.md: f7b304cd43f96ab82f0e48998a30b42067058ed3e540a774aca255d6a2d52f05
     skills/review-loop/SKILL.md: da42343fa69b017c974e0cb7831506bfcc7e90a6764927e70d92b813d7280048
     skills/review/SKILL.md: e8621a1ab67fd4a74dbd2f1470ff7621f7352171fbaf3c7ce8e1738c5283020e
-    skills/session-harvest/SKILL.md: b15f5aa313fa6a28ad43db8acbb28d12ba219735feca5dbdef5b7a649f52a20f
-    skills/ship-parallel/SKILL.md: 81809baf548ef8571fb78a78f272d80198a7af663ed34a9866d5478e666e9faf
-    skills/ship/SKILL.md: 058dcf60453640b9615ffb4ae28e2f1ade96c94038609e25d92c20b1f1125e72
-    skills/spike-loop/SKILL.md: 3eae50ce7f416a2c854ec3f1dd75e44bb67888939b33f5cf75f1b1cb10940f5d
-    skills/sync-check/SKILL.md: 3afaa6ada3424f77fe5990f9631a4431de474c0ac5c570b2e52567432c58a71a
-    skills/sync-edit/SKILL.md: 77e5a7eb331929eff9537d883a8198ee12f8736d401e045f7f0aebc6e87f3590
+    skills/session-harvest/SKILL.md: 049c346243190675afb612deaca92a43ac168e16df21045aabca5b17726c5217
+    skills/ship-parallel/SKILL.md: e95aecfc1fdd0f6b14fec653336fe369bee382f8bcc20ef877ec45570c0f2798
+    skills/ship/SKILL.md: a971df746401849f1388f71d932b1ef061770649418f0a1f4449d2bbc7980be9
+    skills/spike-loop/SKILL.md: 50ba0d01e0eda8a1bd9f9b6053f39c60f489a0a8a6fcc690e133f906a63ebc52
+    skills/sync-check/SKILL.md: f06a72a7c6a6db5040df4581ae9bf6a2a4201ac06adabd0b0812d4797dfafdda
+    skills/sync-edit/SKILL.md: 7ad5912fe9bf95e32cb199d376a13f8ecede05850ed24e48092cba25158835b8
     skills/worktree/SKILL.md: df692d0eab1ddd4fd0c15cc955f6f80e94936599cc3e0411e6d640cdab3a3eb6
 

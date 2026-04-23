@@ -22,8 +22,8 @@ description: "diagnose→ship の自律改善ループを1回実行する。Issu
 
 - **full プリセット専用**（`/diagnose` と `/ship-parallel` が必要）
 - main ブランチにいること
-- `/diagnose` が起票した diagnose Issue は **CISO + CPO + SM の3者承認ゲート**（rules/autonomous-restrictions.md）を通過済みのため、不可領域（認証 / 暗号 / 課金構造 / ガードレール / MVV）が自動除外されている
-- 手動起票された Issue（diagnose ラベルなし）はこのスキルの対象外
+- **対象 Issue: open な全 Issue（ラベル問わず）**。不可領域フィルタ（認証 / 暗号 / 課金構造 / ガードレール / MVV）は起票側（`/diagnose` と `/issue`）の3者承認ゲートで実施済みであり、ship 側は起票済み Issue を信頼して実行する
+- `diagnose` ラベル自体は **起票経路の識別用途** として残る（`/diagnose` が付与）。ship 可否の判定には使わない
 - **knowledge/buffer フロー**: ship 後に `/review-harvest` → `/knowledge-pr` を実行するが、main への反映は必ず auto-merge 経由（`/knowledge-pr` が PR を起こして CodeRabbit + CI を通す）。main への直接 push は一切発生しない
 
 ## ワークフロー
@@ -44,15 +44,17 @@ git branch --show-current
 
 main でない場合は「main ブランチに切り替えてください」と報告して終了。
 
-### 3. open な diagnose Issue を確認
+### 3. open な Issue を確認
+
+ラベル問わず全 open Issue を対象とする（`/diagnose` 起票分も `/issue` 起票分も同じパイプで処理）:
 
 ```bash
-gh issue list --label "diagnose" --state open --json number,title --jq '.[] | "#" + (.number | tostring) + ": " + .title'
+gh issue list --state open --json number,title --jq '.[] | "#" + (.number | tostring) + ": " + .title'
 ```
 
 ### 4. Issue がない場合 → diagnose 実行
 
-open な diagnose Issue が0件の場合、`/diagnose` を実行して Issue を起票する。
+open な Issue が0件の場合（ラベル問わず全 open Issue を対象に判定）、`/diagnose` を実行して Issue を起票する。
 起票後、そのままステップ5に進む（起票した Issue を ship する）。
 
 ### 5. SM による並列判定
@@ -87,7 +89,7 @@ AskUserQuestion でユーザーの選択を取得する。
 
 #### 6b. `--auto` モード
 
-ユーザー確認なしで、全 diagnose Issue を `/ship-parallel` に渡す。
+ユーザー確認なしで、SM の分析で通過した全候補（ラベル問わず）を `/ship-parallel` に渡す。
 
 ### 7. knowledge/buffer の収集 → PR 化
 
@@ -107,7 +109,7 @@ ship 実行（またはスキップ）後、蓄積されたレビュー指摘と
 ```text
 ## /autopilot 完了
 
-- diagnose Issue: {n}件
+- 対象 Issue: {n}件（うち diagnose 起票: {n}件 / 手動起票: {n}件）
 - ship 実行: {n}件
 - スキップ: {n}件
 - review-harvest: {処理 PR 数 / skip 理由}
