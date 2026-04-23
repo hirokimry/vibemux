@@ -64,6 +64,9 @@ cmd_new() {
   local session="$1"
   local dir="${2:-.}"
 
+  # Prevent nested tmux sessions
+  [[ -n "${TMUX:-}" ]] && die "already inside a tmux session (nested sessions are not supported)"
+
   dir="$(cd "$dir" 2>/dev/null && pwd)" || die "directory not found: ${2:-.}"
 
   tmux has-session -t "$session" 2>/dev/null && die "session '$session' already exists (use 'vibemux attach $session')"
