@@ -57,6 +57,15 @@ vibemux はユーザーのシェル環境で動作する tmux セッションラ
 
 `VIBEMUX_PANE_*` の値は `tmux send-keys` で各ペインに送信される。環境変数に悪意ある値が設定された場合、そのコマンドが実行される。ユーザー自身が設定する前提のため、外部からの注入経路がない限りリスクは限定的。
 
+### tmux 絶対パス直叩き
+
+PATH shim（`$PATH` 先頭に置く tmux ラッパー、Issue #31）は `tmux kill-server` のような相対参照を排除するが、`/usr/bin/tmux kill-server` 等の絶対パス直叩きで素通しされる。AI エージェントが意図せず破壊的コマンドを発行するリスクを緩和するため、2 段階防御を計画している:
+
+- Phase A: 事後検知（PreToolUse Bash フックで警告ログのみ・OS 非依存・常時動作）
+- Phase B: sandbox 統合（`sandbox-exec` / `bwrap` で直接 exec をブロック・`VIBECORP_ISOLATION=1` 時のみ有効）
+
+詳細な脅威モデル・正規化規則・実装方針は [`docs/tmux-guardrail.md`](./tmux-guardrail.md) を参照。
+
 ## データ保護
 
 ### 機密情報の取り扱い
