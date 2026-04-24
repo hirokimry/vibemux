@@ -30,10 +30,12 @@ vibemux は tmux を AI と人が同じ画面で開発するための土台と�
 |---|---|---|---|---|
 | 1 | `tmux kill-server` | ブロック | （対象外） | （対象外） |
 | 2 | `/usr/bin/tmux kill-server` | 素通し | 検知（警告） | ブロック |
-| 3 | `command tmux kill-server` | 素通し | 検知（警告） | （Phase B 適用外・Phase A で検知） |
-| 4 | `env tmux kill-server` | 素通し | 検知（警告） | （Phase A で検知） |
+| 3 | `command tmux kill-server` | 素通し | 検知（警告） | ブロック（解決後 `/usr/bin/tmux` の `process-exec` が拒否される） |
+| 4 | `env tmux kill-server` | 素通し | 検知（警告） | ブロック（解決後 `/usr/bin/tmux` の `process-exec` が拒否される） |
 | 5 | `T=$(command -v tmux); $T kill-server` | 素通し | 検知（警告・正規化後） | ブロック |
 | 6 | `alias tmux=/usr/bin/tmux; tmux kill-server` | 素通し | 検知（警告） | ブロック |
+
+> Phase B の判定は **解決後（exec 直前）の絶対パス**に対して行われる。`command` / `env` のようなラッパー経由でも、最終的に `/usr/bin/tmux` を exec しようとすれば sandbox-exec / bwrap の `(deny process-exec (literal "/usr/bin/tmux"))` ルールに引っかかってブロックされる。ただし shim ディレクトリ未経由でも tmux のインストール先が許可リストに無いケース（例: nix profile）では Phase B のフォールバック規則（regex）の有無で挙動が変わる点に留意する。
 
 ### 信頼境界
 
