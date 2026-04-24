@@ -58,6 +58,18 @@ C-Level エージェントの下に専門分析員を配置し、詳細な分析
 
 **注意**: role-gate フックが有効な場合、管轄外のファイル編集は技術的にもブロックされる。承認フローは管轄エージェント自身が変更を代行する形で運用する。
 
+### PreToolUse フックの実行順序
+
+`settings.json` の配列順で順次実行される。現在の Bash フック順序:
+
+1. `block-api-bypass` — API 直接マージ・approve 投稿のブロック
+2. `command-log` — コマンドログ記録
+3. `protect-branch` — メインブランチ保護
+4. `review-gate` — PR 作成前のレビュー完了確認
+5. `sync-gate` — push 前の sync-check 完了確認
+
+先行フックが deny を返した場合、後続フックは実行されない。
+
 ### MVV 編集権限
 
 - MUST: MVV.md の編集はファウンダーのみが行う

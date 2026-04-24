@@ -14,4 +14,20 @@
 
 ## 判断ログ
 
-<!-- CTO エージェントが以下に追記していく -->
+### 2026-04-24: protect-branch の worktree 制限（既知の制約）
+
+- **判断**: Bash ツールの tool_input.command からは worktree パスを取得できないため、teammate が直接 `git commit` を実行した場合、main repo の cwd に対してブランチチェックが走る。この制限は現時点で受容し、回避策として `/commit` スキル経由の利用を推奨する
+- **根拠**: Claude Code の Bash ツールが worktree コンテキストを公開していないプラットフォーム制約。フック側での解決は不可能
+- **代替案**: なし（上流の Claude Code に依存するため）
+
+### 2026-04-24: protect-branch の quote-aware コマンドパース未対応
+
+- **判断**: sed ベースのコマンド分割がシェル引用符を考慮しないため、`git commit -m "msg; rm -rf /"` のようなセミコロン含みのメッセージが誤って複数コマンドとして分割される可能性がある。現時点ではリスク受容し、将来的に shell quote-aware パーサーへの移行を検討する
+- **根拠**: 実害が限定的（コミットがブロックされる方向の誤検知であり、セキュリティ上の bypass ではない）
+- **代替案**: Python/Perl の shell quote パーサーの導入（複雑性増加のため見送り）
+
+### 2026-04-24: diagnose-guard のグロブパターン制限
+
+- **判断**: glob→regex 変換は単一階層ワイルドカード (`*`) のみ対応。再帰ワイルドカード (`**/`) は未サポート。現時点のパターン定義で十分なため受容する
+- **根拠**: `autonomous-restrictions.md` の forbidden_targets は `hooks/*auth*.sh` のような単一階層パターンのみ使用しており、再帰パターンの需要がない
+- **代替案**: find -path ベースのマッチング（将来的に patterns が複雑化した場合に検討）
