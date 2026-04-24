@@ -28,11 +28,20 @@ vibemux は tmux セッションランチャーであり、ユーザーのシェ
 
 ### 設定ファイルの安全性
 
-vibemux は `~/.config/vibemux/config` を `source` で読み込むため、任意コード実行のリスクがある。
+vibemux は `~/.config/vibemux/config` を `source` で読み込むため、任意コード実行のリスクがある（`vibemux:15-18`）。
+
+```bash
+VIBEMUX_CONFIG="${VIBEMUX_CONFIG:-$HOME/.config/vibemux/config}"
+if [[ -f "$VIBEMUX_CONFIG" ]]; then
+  source "$VIBEMUX_CONFIG"
+fi
+```
+
 緩和策:
 - 設定ファイルはユーザー自身が作成・管理する前提（他者が書き込み可能なパスは使わない）
 - `VIBEMUX_CONFIG` で指定されたパスが存在しない場合はスキップ（既に実装済み）
 - 設定ファイルの内容は変数代入のみを想定。関数定義やコマンド実行は非推奨
+- `VIBEMUX_CONFIG` 環境変数で任意パスを指定可能なため、信頼できないパスを指定させない運用が必要
 
 ### コーディング規約
 
@@ -40,6 +49,10 @@ vibemux は `~/.config/vibemux/config` を `source` で読み込むため、任�
 - `eval` は使用禁止
 - 外部入力（セッション名、ディレクトリパス）は検証してから使用
 - 一時ファイルは `/tmp/.vibemux-*` プレフィックスで `mktemp` 使用
+
+### protect-branch のコマンドパース制限
+
+`protect-branch.sh` は sed ベースでコマンド文字列を `&&`, `||`, `;` で分割する。シェルの引用符を考慮しないため、引用符内のセミコロン（例: `git commit -m "fix; update"`）が区切りとして誤検知される場合がある。これはコミットがブロックされる方向の誤検知であり、セキュリティ上の bypass にはならない（false positive、false negative ではない）。
 
 ## 判断基準
 
