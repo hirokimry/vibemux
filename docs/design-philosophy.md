@@ -369,3 +369,7 @@ gate hook 失敗時はこのディレクトリ内の `<name>-ok` ファイル有
 - **Public Ready**: セキュリティ情報・特定プロダクト名・ローカルパス依存の混入禁止
 - **品質基準**: 参照元の実装を全網羅し、品質・汎用性・堅牢性で上回る
 - **テスト必須**: hooks / install.sh は自動テスト付き。テストなしで push しない
+
+### tmux 操作のガードレール
+
+AI エージェントによる tmux への破壊的操作（絶対パス直叩きを含む）を防ぐ 2 段階防御モデルは [`docs/tmux-guardrail.md`](./tmux-guardrail.md) を参照する。Phase A（事後検知・OS 非依存・常時動作）と Phase B（`sandbox-exec` / `bwrap` による直接 exec ブロック・`VIBECORP_ISOLATION=1` 時のみ有効）の責務分担を定義している。
