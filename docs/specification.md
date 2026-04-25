@@ -191,10 +191,10 @@ vibemux は AI エージェントの tmux 操作が破壊的にならないよ�
 
 ### 位置づけ
 
-- **目的**: AI が誤って `kill-server` 等の破壊的コマンドを発行しても、ユーザーのフローを毀損しないようブロックする
-- **実装**: PATH shim（`$PATH` 先頭に置く tmux ラッパー）で、許可リストを通過したコマンドのみ本物の tmux に委譲する
+- **目的**: AI の破壊的 tmux 操作を抑止する。Phase A では検知と警告を行い、Phase B で条件付きブロックを行う
+- **実装**: PATH shim（`$PATH` 先頭に置く tmux ラッパー）を第1段として導入し、許可リスト判定と経路識別（shim/direct）を行う
 - **ツール非依存**: Claude Code 固有の `permissions.deny` には依存しない（`MVV.md` Value #3「道具に縛られない」準拠）。Aider・Cursor・他の CLI エージェントでも同じガードレールが機能する
-- **段階的防御**: 絶対パス直叩き等の bypass は2段階防御モデル（Phase A: 事後検知、Phase B: sandbox 統合）で対処する
+- **段階的防御**: 絶対パス直叩き等の bypass は2段階防御モデルで対処する（Phase A: 事後検知・警告のみ / Phase B: sandbox 統合時に条件付きブロック）
 
 ### 関連
 
