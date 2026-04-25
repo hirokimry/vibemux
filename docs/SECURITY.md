@@ -66,6 +66,10 @@ Issue #31 で実装予定の PATH shim（`$PATH` 先頭に置く tmux ラッパ�
 
 詳細な脅威モデル・正規化規則・実装方針は [`docs/tmux-guardrail.md`](./tmux-guardrail.md) を参照。
 
+### tmux kill-session の所有判定
+
+PATH shim 経由で受け付ける `tmux kill-session` は、AI が作成したセッションのみに条件付き許可される。識別方式（命名規則 + 外部トラッキングファイルの AND 条件、信頼境界、TOCTOU 残存リスク）は [`docs/tmux-kill-session-identification.md`](./tmux-kill-session-identification.md) を参照。
+
 ## データ保護
 
 ### 機密情報の取り扱い
