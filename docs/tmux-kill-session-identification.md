@@ -126,6 +126,8 @@ shim が `new-session` で TSV に追記する**直前**に、以下を実行す
 ```text
 function shim_kill_session(args):
     # 1. 引数解析と即時拒否
+    if len(args) == 0:
+        deny("セッション名を指定してください", route="no-args")
     if "-a" in args:
         deny("-a による全削除は禁止されています", route="prefix-blanket")
     if "-t" not in args or count("-t", args) > 1:
@@ -192,7 +194,7 @@ ${XDG_CACHE_HOME:-$HOME/.cache}/vibecorp/state/<repo-id>/tmux-direct-exec.log
 
 - レコードに `event=kill-session-denied` フィールドを付与し、#35 の `event=direct-exec` レコードと区別する
 - 統合理由: tmux ガードレール関連の監査証跡を一元化することで、運用時の `tail -f` での観察と grep 抽出が容易になる
-- フォールバック: #35 が当該ログ仕様（フィールド構成）を確定させる前に本設計が実装に進む場合は、`kill-session-denied.log` 別ファイルを暫定採用し、#35 確定後に統合する
+- #35 側のフィールド詳細が未確定でも、出力先は `tmux-direct-exec.log` に固定する。`event=kill-session-denied` を必須フィールドとし、追加フィールドは後方互換で拡張する
 
 ## 脅威モデル / バイパス経路
 
@@ -244,11 +246,15 @@ ${XDG_CACHE_HOME:-$HOME/.cache}/vibecorp/state/<repo-id>/tmux-direct-exec.log
 
 ## `vibemux new` 経由セッションの扱い
 
-`vibemux:75` で `tmux new-session -d -s "$session"` を実行している。AI が `vibemux new` 経由で作ったセッションは「AI 作成」と見なすが、人間が手動で `vibemux new` を呼んだ場合は「ユーザー作成」とも言える。
+`vibemux:75` で `tmux new-session -d -s "$session"` を実行している。ただし shim は呼び出し元（人間 / AI）を区別できないため、`vibemux new` 経由のセッションは **「厳密な所有判定ができないケース」** に分類する。
 
-設計指針: shim は呼び出し元（人間 / AI）を区別できないため、**`vibemux new` 経由の `new-session` も AI 作成として扱う**。
+設計指針: 要件「AI が自分で作ったセッションのみ許可」と「疑わしきは拒否」方針に合わせ、**`vibemux new` 経由のセッションは shim の `kill-session` 許可対象外とする**。具体的には:
 
-人間が誤って AI セッションを kill されるリスクを避けるため、対話的なセッションは shim 経由の `kill-session` ではなく `tmux kill-session` 直接実行（shim 外）またはユーザー操作（`Ctrl-b :kill-session` 等）で終了する想定。本ドキュメントを参照するユーザー向けに、この運用ルールを README で補足することが望ましい（後続 Issue で対応）。
+- `vibemux new` 経由の `new-session` は TSV に登録しない（AI 作成と確定できないため）
+- 結果として shim 経由で当該セッションを `kill-session` しようとすると第 2 層（TSV 未登録）で拒否される
+- 対話的なセッションの終了は shim 経由ではなく `tmux kill-session` 直接実行（shim 外）またはユーザー操作（`Ctrl-b :kill-session` 等）で行う
+
+本ドキュメントを参照するユーザー向けに、この運用ルールを README で補足することが望ましい（後続 Issue で対応）。
 
 ## 関連
 
