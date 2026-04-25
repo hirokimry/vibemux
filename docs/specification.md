@@ -105,9 +105,29 @@ vibemux は **「場を作る道具」** であり、**「場を運用する道�
 
 ### VSCode の位置づけ
 
-> 詳細は Issue [#40](https://github.com/hirokimry/vibemux/issues/40) で追記される。
+AI が 100% コードを書く前提では、VSCode に依存していた機能の大半が「価値消失」「価値低下」または「元々 CLI で十分」に分類される。完全廃止ではなく、**daily driver からは外し、diff 確認専用ツールとして残す** のが現実的な着地点である。詳細な評価過程は [Issue #30 問い1](https://github.com/hirokimry/vibemux/issues/30#issuecomment-4297693682) を参照。
 
-AI が 100% コードを書く前提では LSP 等のリッチエディタ機能の価値が低下する。VSCode は daily driver から外し、diff 確認専用ツールとして位置づける。
+#### AI 100% 前提での機能再評価
+
+| 機能 | 評価 | 根拠 |
+|---|---|---|
+| LSP（型補完・タイポ検知） | 価値消失 | AI がタイポも型エラーも自分で直すため、リッチエディタの最大の利点が真っ先に消える |
+| inline diff accept UI（Claude Code 拡張） | 価値低下 | 自動レビュー + auto-merge が主経路。通常の確認は GitHub Web で十分で、**大規模 diff / 複数ファイル横比較のみ VSCode を使う** |
+| 画像・PDF・Jupyter のインライン表示 | 条件付き必要 | Jupyter を使う場合のみ価値あり。画像・PDF はターミナル image protocol（Ghostty / kitty）で代替可 |
+| Live Share | 限定的に必要 | 人間同士のペアプロ文化がある場合のみ。AI 駆動開発では Zoom / tmate で代替可 |
+| GUI デバッガ | 限定的に必要 | 日常的に使わないなら不要 |
+| linter / formatter / git / 全文検索 | 元々 CLI で十分 | Ghostty + tmux 環境で完結する |
+
+#### 結論: daily driver から外し、diff 専用ツールとして残す
+
+LSP の価値消失と inline diff の価値低下が大きく、VSCode をメインで使う必然性は失われた。一方で、大規模 diff の精読や複数ファイルの横並び比較といった例外ケースでは GitHub Web より UX が優れるため、補助ツールとしては残す。
+
+#### Ghostty + tmux との役割分担
+
+| 環境 | 役割 |
+|---|---|
+| Ghostty + tmux（メイン） | AI への指示・監視・意思決定・成果物検証（lazygit）・並列エージェント運用 |
+| VSCode（補助） | 大規模 diff の精読、複数ファイル比較が必要な例外ケース |
 
 ### vibemux のポジショニング
 
