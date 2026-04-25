@@ -112,7 +112,7 @@ AI が 100% コードを書く前提では、VSCode に依存していた機能�
 | 機能 | 評価 | 根拠 |
 |---|---|---|
 | LSP（型補完・タイポ検知） | 価値消失 | AI がタイポも型エラーも自分で直すため、リッチエディタの最大の利点が真っ先に消える |
-| inline diff accept UI（Claude Code 拡張） | 価値低下 | 自動レビュー + auto-merge が主経路。例外的に diff を精読したい場合は GitHub Web で十分 |
+| inline diff accept UI（Claude Code 拡張） | 価値低下 | 自動レビュー + auto-merge が主経路。通常の確認は GitHub Web で十分で、**大規模 diff / 複数ファイル横比較のみ VSCode を使う** |
 | 画像・PDF・Jupyter のインライン表示 | 条件付き必要 | Jupyter を使う場合のみ価値あり。画像・PDF はターミナル image protocol（Ghostty / kitty）で代替可 |
 | Live Share | 限定的に必要 | 人間同士のペアプロ文化がある場合のみ。AI 駆動開発では Zoom / tmate で代替可 |
 | GUI デバッガ | 限定的に必要 | 日常的に使わないなら不要 |
