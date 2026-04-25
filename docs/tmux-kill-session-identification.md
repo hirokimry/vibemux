@@ -87,9 +87,17 @@ if [ -f "$CLAUDE_PROJECT_DIR/.claude/lib/common.sh" ]; then
   STATE_DIR="$(vibecorp_stamp_dir)"
 else
   # フォールバック: shim 単体で同一アルゴリズムを再現
+  # ハッシュ実装は common.sh の _vibecorp_sha256_short と同順
+  # （shasum → sha256sum → openssl）でフォールバックすること
   TOPLEVEL=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
   BASENAME=$(basename "$TOPLEVEL" | tr -cs 'A-Za-z0-9._-' '_')
-  SHA8=$(printf '%s' "$TOPLEVEL" | shasum -a 256 | cut -c1-8)
+  if command -v shasum >/dev/null 2>&1; then
+    SHA8=$(printf '%s' "$TOPLEVEL" | shasum -a 256 | cut -c1-8)
+  elif command -v sha256sum >/dev/null 2>&1; then
+    SHA8=$(printf '%s' "$TOPLEVEL" | sha256sum | cut -c1-8)
+  else
+    SHA8=$(printf '%s' "$TOPLEVEL" | openssl dgst -sha256 | awk '{print substr($NF, 1, 8)}')
+  fi
   STATE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/vibecorp/state/${BASENAME}-${SHA8}"
 fi
 ```
