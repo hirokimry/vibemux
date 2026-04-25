@@ -4,8 +4,7 @@ set -euo pipefail
 VERSION="0.1.0"
 
 # ── Configuration ──────────────────────────────────────────────
-VIBEMUX_PANE_TOP_LEFT="${VIBEMUX_PANE_TOP_LEFT:-}"
-VIBEMUX_PANE_BOTTOM_LEFT="${VIBEMUX_PANE_BOTTOM_LEFT:-lazygit}"
+VIBEMUX_PANE_LEFT="${VIBEMUX_PANE_LEFT:-lazygit}"
 VIBEMUX_PANE_RIGHT="${VIBEMUX_PANE_RIGHT:-}"
 VIBEMUX_RIGHT_RATIO="${VIBEMUX_RIGHT_RATIO:-70}"
 VIBEMUX_FOCUS="${VIBEMUX_FOCUS:-right}"
@@ -23,25 +22,23 @@ usage() {
 vibemux $VERSION - Vibe coding workspace for tmux
 
 Usage:
-  vibemux new <session-name> [directory]   Create a new 3-pane session
+  vibemux new <session-name> [directory]   Create a new 2-pane session
   vibemux attach <session-name>            Attach to an existing session
   vibemux list                             List active sessions
   vibemux version                          Show version
 
 Layout:
   ┌──────────┬─────────────────────┐
-  │ top-left │                     │
-  │          │       right         │
-  ├──────────┤                     │
-  │ bot-left │                     │
+  │          │                     │
+  │ lazygit  │       shell         │
+  │          │                     │
   └──────────┴─────────────────────┘
 
 Configuration (environment variables):
-  VIBEMUX_PANE_TOP_LEFT      Command for top-left pane     (default: shell)
-  VIBEMUX_PANE_BOTTOM_LEFT   Command for bottom-left pane  (default: lazygit)
-  VIBEMUX_PANE_RIGHT         Command for right pane        (default: shell)
+  VIBEMUX_PANE_LEFT          Command for left pane          (default: lazygit)
+  VIBEMUX_PANE_RIGHT         Command for right pane         (default: shell)
   VIBEMUX_RIGHT_RATIO        Right pane width percentage    (default: 70)
-  VIBEMUX_FOCUS              Initial focus: right|top-left|bottom-left (default: right)
+  VIBEMUX_FOCUS              Initial focus: right|left      (default: right)
   VIBEMUX_CONFIG             Path to config file            (default: ~/.config/vibemux/config)
 EOF
 }
@@ -53,9 +50,8 @@ die() {
 
 resolve_focus_pane() {
   case "$VIBEMUX_FOCUS" in
-    top-left)    echo "0.0" ;;
-    bottom-left) echo "0.1" ;;
-    right|*)     echo "0.2" ;;
+    left)    echo "0.0" ;;
+    right|*) echo "0.1" ;;
   esac
 }
 
@@ -71,15 +67,13 @@ cmd_new() {
 
   tmux has-session -t "$session" 2>/dev/null && die "session '$session' already exists (use 'vibemux attach $session')"
 
-  # Build 3-pane layout
+  # Build 2-pane layout
   tmux new-session -d -s "$session" -c "$dir"
   tmux split-window -h -l "${VIBEMUX_RIGHT_RATIO}%" -t "$session" -c "$dir"
-  tmux split-window -v -t "$session:0.0" -c "$dir"
 
-  # Launch commands (pane indices: 0=top-left, 1=bottom-left, 2=right)
-  [[ -n "$VIBEMUX_PANE_TOP_LEFT" ]]     && tmux send-keys -t "$session:0.0" "$VIBEMUX_PANE_TOP_LEFT" C-m
-  [[ -n "$VIBEMUX_PANE_BOTTOM_LEFT" ]]  && tmux send-keys -t "$session:0.1" "$VIBEMUX_PANE_BOTTOM_LEFT" C-m
-  [[ -n "$VIBEMUX_PANE_RIGHT" ]]        && tmux send-keys -t "$session:0.2" "$VIBEMUX_PANE_RIGHT" C-m
+  # Launch commands (pane indices: 0=left, 1=right)
+  [[ -n "$VIBEMUX_PANE_LEFT" ]]  && tmux send-keys -t "$session:0.0" "$VIBEMUX_PANE_LEFT" C-m
+  [[ -n "$VIBEMUX_PANE_RIGHT" ]] && tmux send-keys -t "$session:0.1" "$VIBEMUX_PANE_RIGHT" C-m
 
   tmux select-pane -t "$session:$(resolve_focus_pane)"
   tmux attach -t "$session"

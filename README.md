@@ -8,10 +8,9 @@
 
 ```text
 ┌──────────┬─────────────────────┐
-│  shell   │                     │
-│          │       shell         │
-├──────────┤                     │
-│ lazygit  │                     │
+│          │                     │
+│ lazygit  │       shell         │
+│          │                     │
 └──────────┴─────────────────────┘
 ```
 
@@ -47,18 +46,16 @@ vibemux list                       # アクティブなセッション一覧
 
 | 変数 | 説明 | デフォルト |
 |---|---|---|
-| `VIBEMUX_PANE_TOP_LEFT` | 左上ペインのコマンド | *(シェル)* |
-| `VIBEMUX_PANE_BOTTOM_LEFT` | 左下ペインのコマンド | `lazygit` |
+| `VIBEMUX_PANE_LEFT` | 左ペインのコマンド | `lazygit` |
 | `VIBEMUX_PANE_RIGHT` | 右ペインのコマンド | *(シェル)* |
 | `VIBEMUX_RIGHT_RATIO` | 右ペインの幅 (%) | `70` |
-| `VIBEMUX_FOCUS` | 起動時のフォーカス: `right`, `top-left`, `bottom-left` | `right` |
+| `VIBEMUX_FOCUS` | 起動時のフォーカス: `right`, `left` | `right` |
 
 ### 設定ファイル
 
 ```bash
 # ~/.config/vibemux/config
-VIBEMUX_PANE_TOP_LEFT="yazi"
-VIBEMUX_PANE_BOTTOM_LEFT="lazygit"
+VIBEMUX_PANE_LEFT="lazygit"
 VIBEMUX_PANE_RIGHT="claude --resume"
 VIBEMUX_RIGHT_RATIO=70
 VIBEMUX_FOCUS=right
@@ -68,24 +65,23 @@ VIBEMUX_FOCUS=right
 
 ### 設定例
 
-**Claude Code + yazi + lazygit**（おすすめ）:
+**Claude Code + lazygit**（おすすめ）:
 
 ```bash
 VIBEMUX_PANE_RIGHT="claude --resume" vibemux new dev
 ```
 
-**Aider + lf + tig:**
+**Aider + tig:**
 
 ```bash
-VIBEMUX_PANE_TOP_LEFT="lf"
-VIBEMUX_PANE_BOTTOM_LEFT="tig"
+VIBEMUX_PANE_LEFT="tig"
 VIBEMUX_PANE_RIGHT="aider"
 ```
 
 **ミニマル構成 — AI アシスタントのみ:**
 
 ```bash
-VIBEMUX_PANE_TOP_LEFT="" VIBEMUX_PANE_BOTTOM_LEFT="" VIBEMUX_PANE_RIGHT="claude" vibemux new focus
+VIBEMUX_PANE_LEFT="" VIBEMUX_PANE_RIGHT="claude" vibemux new focus
 ```
 
 ## コントリビュート

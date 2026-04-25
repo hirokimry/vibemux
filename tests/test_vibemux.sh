@@ -102,7 +102,8 @@ echo
 
 # ── Environment Variable Defaults ────────────────────────────
 echo "[env var defaults]"
-assert_output_contains "usage shows VIBEMUX_PANE_TOP_LEFT" "VIBEMUX_PANE_TOP_LEFT" "$VIBEMUX" help
+assert_output_contains "usage shows VIBEMUX_PANE_LEFT" "VIBEMUX_PANE_LEFT" "$VIBEMUX" help
+assert_output_contains "usage shows VIBEMUX_PANE_RIGHT" "VIBEMUX_PANE_RIGHT" "$VIBEMUX" help
 assert_output_contains "usage shows VIBEMUX_CONFIG" "VIBEMUX_CONFIG" "$VIBEMUX" help
 echo
 
