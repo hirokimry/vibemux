@@ -362,9 +362,20 @@ echo
 
 # ── M-3 修正: ログのパーミッション ──
 echo "[log file permissions]"
+
+# BSD (macOS) の stat は -f '%Lp'、GNU (Linux) の stat は -c '%a' でパーミッションを返す。
+# Linux 上で BSD 構文 `stat -f` を実行しても filesystem 情報を返してしまい
+# 終了コードは 0 になるので || フォールバックは効かない → uname で分岐する。
+get_perm_mode() {
+  case "$(uname -s)" in
+    Darwin|*BSD) stat -f '%Lp' "$1" ;;
+    *)           stat -c '%a' "$1" ;;
+  esac
+}
+
 desc="ログディレクトリのパーミッションが 700"
 log_dir=$(dirname "$LOG_PATH")
-mode=$(stat -f '%Lp' "$log_dir" 2>/dev/null || stat -c '%a' "$log_dir" 2>/dev/null)
+mode=$(get_perm_mode "$log_dir")
 if [ "$mode" = "700" ]; then
   pass "$desc"
 else
@@ -372,7 +383,7 @@ else
 fi
 
 desc="ログファイルのパーミッションが 600"
-mode=$(stat -f '%Lp' "$LOG_PATH" 2>/dev/null || stat -c '%a' "$LOG_PATH" 2>/dev/null)
+mode=$(get_perm_mode "$LOG_PATH")
 if [ "$mode" = "600" ]; then
   pass "$desc"
 else
