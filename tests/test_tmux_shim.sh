@@ -7,11 +7,7 @@
 # - テストごとにログディレクトリ・PATH を制御
 # - 環境変数依存テストはサブシェルで制御（.claude/rules/testing.md）
 #
-# 注: `set -e` は意図的に省略している。shim の拒否ケースは exit 1 で返るが、
-# 各テストはそれを `|| actual=$?` 形式で受けるため、`-e` 下では非ゼロ終了で
-# テスト全体が abort してしまう。`set -uo pipefail` のみ有効化する。
-
-set -uo pipefail
+set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SHIM="${REPO_ROOT}/.claude/bin/tmux"
@@ -48,7 +44,7 @@ cleanup_tmpdir() {
 # resolve_real_tmux が fake-tmux を見つけられるようにする
 run_shim() {
   local out
-  out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" "$@" 2>&1)
+  out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" "$@" 2>&1) || true
   printf '%s' "$out"
 }
 
@@ -62,8 +58,7 @@ assert_denied() {
   local desc="$1" expected_pattern="$2"
   shift 2
   local out rc
-  out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" "$@" 2>&1)
-  rc=$?
+  out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" "$@" 2>&1) && rc=0 || rc=$?
   if [ "$rc" -ne 1 ]; then
     fail "$desc (期待: exit 1、実際: exit $rc, output: $out)"
     return
@@ -83,8 +78,7 @@ assert_allowed_to_fake() {
   local desc="$1"
   shift
   local out rc
-  out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" "$@" 2>&1)
-  rc=$?
+  out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" "$@" 2>&1) && rc=0 || rc=$?
   if [ "$rc" -eq 0 ] && echo "$out" | grep -q "^fake-tmux:"; then
     pass "$desc"
   else
@@ -176,6 +170,7 @@ assert_denied "setw synchronize-panes True" "synchronize-panes" setw synchronize
 assert_denied "setw synchronize-panes 1" "synchronize-panes" setw synchronize-panes 1
 assert_denied "set-window-option synchronize-panes on" "synchronize-panes" set-window-option synchronize-panes on
 assert_denied "set -w synchronize-panes on (set-option -w 経由)" "synchronize-panes" set -w synchronize-panes on
+assert_denied "set-option -t my:0 synchronize-panes on (-t の値がオプション名に誤認されない)" "synchronize-panes" set-option -t my:0 synchronize-panes on
 assert_allowed_to_fake "setw synchronize-panes off" setw synchronize-panes off
 assert_allowed_to_fake "setw synchronize-panes 0" setw synchronize-panes 0
 echo
@@ -183,8 +178,7 @@ echo
 # ── Phase 2.1-2.4: kill-session 引数構文 ──
 echo "[kill-session argument syntax]"
 desc="kill-session（引数なし）→ target-required"
-out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session 2>&1)
-rc=$?
+out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session 2>&1) && rc=0 || rc=$?
 if [ "$rc" -eq 1 ] && echo "$out" | grep -q "セッション名"; then
   pass "$desc"
 else
@@ -214,8 +208,7 @@ echo
 # ── Phase 2.5: VIBEMUX_AI_SESSION_PREFIX カスタム ──
 echo "[VIBEMUX_AI_SESSION_PREFIX custom]"
 desc="VIBEMUX_AI_SESSION_PREFIX=foo- で foo-x → 許可"
-out=$(VIBEMUX_AI_SESSION_PREFIX=foo- PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t foo-x 2>&1)
-rc=$?
+out=$(VIBEMUX_AI_SESSION_PREFIX=foo- PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t foo-x 2>&1) && rc=0 || rc=$?
 if [ "$rc" -eq 0 ] && echo "$out" | grep -q "^fake-tmux:"; then
   pass "$desc"
 else
@@ -223,8 +216,7 @@ else
 fi
 
 desc="VIBEMUX_AI_SESSION_PREFIX 未設定でデフォルト vbx- 適用"
-out=$(unset VIBEMUX_AI_SESSION_PREFIX; PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t vbx-y 2>&1)
-rc=$?
+out=$(unset VIBEMUX_AI_SESSION_PREFIX; PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t vbx-y 2>&1) && rc=0 || rc=$?
 if [ "$rc" -eq 0 ] && echo "$out" | grep -q "^fake-tmux:"; then
   pass "$desc"
 else
@@ -235,8 +227,7 @@ echo
 # ── Phase 2.6: グロブ展開対策 ──
 echo "[prefix glob safety]"
 desc="VIBEMUX_AI_SESSION_PREFIX='*' で random → 拒否（グロブ展開しない）"
-out=$(VIBEMUX_AI_SESSION_PREFIX='*' PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t random 2>&1)
-rc=$?
+out=$(VIBEMUX_AI_SESSION_PREFIX='*' PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t random 2>&1) && rc=0 || rc=$?
 if [ "$rc" -eq 1 ] && echo "$out" | grep -q "プレフィックス不一致"; then
   pass "$desc"
 else
@@ -244,8 +235,7 @@ else
 fi
 
 desc="VIBEMUX_AI_SESSION_PREFIX='[abc]' で a → 拒否"
-out=$(VIBEMUX_AI_SESSION_PREFIX='[abc]' PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t a 2>&1)
-rc=$?
+out=$(VIBEMUX_AI_SESSION_PREFIX='[abc]' PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t a 2>&1) && rc=0 || rc=$?
 if [ "$rc" -eq 1 ] && echo "$out" | grep -q "プレフィックス不一致"; then
   pass "$desc"
 else
@@ -275,7 +265,7 @@ echo
 # ── Phase 2.8: workaround ヒント ──
 echo "[workaround hint on prefix-mismatch]"
 desc="prefix-mismatch 時に workaround ヒント"
-out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t foo 2>&1)
+out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t foo 2>&1) && true || true
 if echo "$out" | grep -q "ヒント:"; then
   pass "$desc"
 else
@@ -283,7 +273,7 @@ else
 fi
 
 desc="kill-session -a (blanket) では workaround を出さない"
-out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -a 2>&1)
+out=$(PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -a 2>&1) && true || true
 if echo "$out" | grep -q "ヒント:"; then
   fail "$desc (blanket でヒントが出てしまった: $out)"
 else

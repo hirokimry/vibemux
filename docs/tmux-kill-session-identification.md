@@ -258,13 +258,16 @@ Issue #31 で実装した Phase A は本設計書の擬似コードのうち以�
 
 `vibemux:75` で `tmux new-session -d -s "$session"` を実行している。ただし shim は呼び出し元（人間 / AI）を区別できないため、`vibemux new` 経由のセッションは **「厳密な所有判定ができないケース」** に分類する。
 
-設計指針: 要件「AI が自分で作ったセッションのみ許可」と「疑わしきは拒否」方針に合わせ、**`vibemux new` 経由のセッションは shim の `kill-session` 許可対象外とする**。具体的には:
+設計指針: 要件「AI が自分で作ったセッションのみ許可」と「疑わしきは拒否」方針に合わせ、**`vibemux new` 経由のセッションは shim の `kill-session` 許可対象外とする**。
+
+**Phase A（現行実装）** では `${VIBEMUX_AI_SESSION_PREFIX:-vbx-}` プレフィックスチェックのみで判定する。`vibemux new` が作成するセッション名は通常 `vbx-` プレフィックスを持たないため、Phase A のプレフィックス不一致で拒否される。
+
+**Phase AB（フォローアップ）** では TSV 登録を追加し、第 2 層として TSV 未登録の拒否が加わる:
 
 - `vibemux new` 経由の `new-session` は TSV に登録しない（AI 作成と確定できないため）
-- 結果として shim 経由で当該セッションを `kill-session` しようとすると第 2 層（TSV 未登録）で拒否される
-- 対話的なセッションの終了は shim 経由ではなく `tmux kill-session` 直接実行（shim 外）またはユーザー操作（`Ctrl-b :kill-session` 等）で行う
+- 結果として shim 経由で当該セッションを `kill-session` しようとすると、Phase A のプレフィックスチェックに加え第 2 層（TSV 未登録）でも拒否される
 
-本ドキュメントを参照するユーザー向けに、この運用ルールを README で補足することが望ましい（後続 Issue で対応）。
+いずれの Phase でも、対話的なセッションの終了は shim 経由ではなく実体 tmux の直接実行またはユーザー操作（`Ctrl-b :kill-session` 等）で行う。
 
 ## 関連
 

@@ -223,15 +223,21 @@ contains_global_flag() {
 # 呼び出し: is_synchronize_panes_on "${SUBCMD_ARGS[@]}"
 is_synchronize_panes_on() {
   local seen_double_dash=0
+  local skip_next=0
   local positional=()
   local arg lower
   for arg in "$@"; do
+    if [ "$skip_next" -eq 1 ]; then
+      skip_next=0
+      continue
+    fi
     if [ "$seen_double_dash" -eq 1 ]; then
       positional+=("$arg")
       continue
     fi
     case "$arg" in
       --) seen_double_dash=1 ;;
+      -t) skip_next=1 ;;
       -*) ;;
       *) positional+=("$arg") ;;
     esac

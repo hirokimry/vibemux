@@ -220,9 +220,9 @@ bwrap \
 
 Phase B（実際にブロックするモード）を将来導入する際は、別途 `VIBECORP_ISOLATION` の有無で制御する（Phase B 自体が opt-in のため重複の opt-out は不要）。
 
-## テスト戦略（実装時）
+## テスト戦略
 
-Issue #31（PATH shim 実装）または専用の実装 Issue で本設計を実装する際、`tests/test_tmux_guardrail.sh` を新規作成し以下のケースを検証する。
+Phase A の PATH shim テストは `tests/test_tmux_shim.sh` に実装済み（Issue #31）。以下のケースを検証する。
 
 | # | ケース | 期待挙動 |
 |---|---|---|
