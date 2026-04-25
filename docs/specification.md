@@ -17,7 +17,7 @@ vibemux は **「最初の1画面を立てる道具」** である。`vibemux ne
 
 shell で AI に指示を出し、lazygit で変更を検証する。**この2ペインが、AI 駆動開発における人間の主要活動をカバーする。**
 
-> 内部構造は3ペイン分割を維持しており、左上ペイン (`top-left`) はデフォルトで空シェル、任意のコマンド（例: yazi）を `VIBEMUX_PANE_TOP_LEFT` で差し込めば opt-in 利用も可能。詳細は [§機能仕様 > ペインレイアウト](#ペインレイアウト) を参照。
+> 内部構造も2ペインで完結する（旧仕様の3ペイン構造は Issue #32 で廃止）。詳細は [§機能仕様 > ペインレイアウト](#ペインレイアウト) を参照。
 
 ## vibemux の責務境界
 
@@ -191,43 +191,34 @@ vibemux 自身は管理機能を持たない（[§vibemux の責務境界](#vibe
 
 ### ペインレイアウト
 
-デフォルトは **2ペイン構成**（lazygit + shell）である。Issue #30（問い3）の検証に基づき、yazi（ファイルマネージャ）はデフォルトから廃止された。
+デフォルトは **2ペイン構成**（lazygit + shell）である。Issue #30（問い3）の検証に基づき yazi（ファイルマネージャ）デフォルトを廃止し、Issue #32 で内部構造の3ペインも撤廃して2ペインに統一した。
 
 ```text
 ┌──────────┬─────────────────────┐
-│ top-left │                     │
-│ (empty)  │       right         │
-├──────────┤      (shell)        │
-│ bot-left │                     │
-│ (lazygit)│                     │
+│          │                     │
+│ left     │       right         │
+│ (lazygit)│      (shell)        │
+│          │                     │
 └──────────┴─────────────────────┘
 ```
 
 #### 構造詳細
 
-tmux の split-window により内部的には3ペイン構造を維持する。`top-left` はデフォルトで空シェルとなり、視覚的には2ペイン UX として動作する。
+tmux の split-window で `-h`（水平分割）を1回だけ行う2ペイン構造である。
 
 ペインインデックスの割り当て順序:
 
-1. `new-session` で最初のペイン作成 → index 0（後の top-left）
-2. `split-window -h` で右ペイン分割 → 右ペインが index 2
-3. `split-window -v -t 0.0` で左を上下分割 → top-left が 0.0、bottom-left が 0.1
+1. `new-session` で最初のペイン作成 → index 0（left）
+2. `split-window -h` で右ペイン分割 → right が index 1
 
-#### yazi デフォルト廃止の経緯
+#### 旧3ペイン構造の廃止経緯
 
-[Issue #30](https://github.com/hirokimry/vibemux/issues/30)（問い3）の検証で、ファイルツリーは AI 駆動開発において主役にも準主役にもならないと判定された。
+旧仕様では `split-window -v` により左ペインを上下分割した内部3ペイン構造を取っていた（top-left を空シェルにすることで視覚的には2ペインに見せる方式）。Issue #32 でこの内部分割を撤廃し、コード・UX 双方を2ペインに揃えた。
 
-- AI が 100% 書く前提では、ファイル構造の探索を AI に依頼する方が高速
-- 変更ファイル一覧は lazygit が既にカバーしている
-- ファウンダーの実行動でも、yazi が見られる頻度は稀であった
+- yazi デフォルト廃止（[Issue #30](https://github.com/hirokimry/vibemux/issues/30) 問い3）により top-left ペインの存在意義が失われたため
+- 内部だけ3ペインを残すと設定変数（`VIBEMUX_PANE_TOP_LEFT`）・フォーカス値・ドキュメントが冗長になり、`MVV.md` Value #1「一発で整う」に反するため
 
-このため `VIBEMUX_PANE_TOP_LEFT` のデフォルトを空シェルに変更した。yazi を引き続き使いたい場合は環境変数で復元できる:
-
-```bash
-VIBEMUX_PANE_TOP_LEFT=yazi vibemux new myproject
-```
-
-> なお `MVV.md` Value #2「ファイル・git・AIが常に視界にある」の「ファイル」の定義見直しはファウンダー判断事項として継続検討中である。本仕様書では yazi デフォルト廃止という決定事項のみを記述する。
+> なお `MVV.md` Value #2「ファイル・git・AIが常に視界にある」の「ファイル」の定義見直しはファウンダー判断事項として継続検討中である。本仕様書では yazi デフォルト廃止と2ペイン化という決定事項のみを記述する。
 
 ### 設定
 
@@ -241,11 +232,10 @@ VIBEMUX_PANE_TOP_LEFT=yazi vibemux new myproject
 
 | 変数 | 説明 | デフォルト |
 |---|---|---|
-| `VIBEMUX_PANE_TOP_LEFT` | 左上ペインのコマンド | *(空シェル — yazi 等を opt-in 可能。経緯は [§ペインレイアウト](#ペインレイアウト))* |
-| `VIBEMUX_PANE_BOTTOM_LEFT` | 左下ペインのコマンド | `lazygit` |
+| `VIBEMUX_PANE_LEFT` | 左ペインのコマンド | `lazygit` |
 | `VIBEMUX_PANE_RIGHT` | 右ペインのコマンド | *(シェル)* |
 | `VIBEMUX_RIGHT_RATIO` | 右ペインの幅 (%) | `70` |
-| `VIBEMUX_FOCUS` | 初期フォーカス | `right` |
+| `VIBEMUX_FOCUS` | 初期フォーカス（`right`, `left`） | `right` |
 | `VIBEMUX_CONFIG` | 設定ファイルパス | `~/.config/vibemux/config` |
 
 ### 補助機能
