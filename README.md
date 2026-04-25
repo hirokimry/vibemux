@@ -8,10 +8,9 @@
 
 ```text
 ┌──────────┬─────────────────────┐
-│  shell   │                     │
-│          │       shell         │
-├──────────┤                     │
-│ lazygit  │                     │
+│          │                     │
+│ lazygit  │       shell         │
+│          │                     │
 └──────────┴─────────────────────┘
 ```
 
@@ -25,10 +24,13 @@ AI 駆動開発では、shell でエージェントに指示を出し、lazygit 
 
 ```bash
 git clone https://github.com/hirokimry/vibemux.git
-ln -s "$(pwd)/vibemux/vibemux" ~/.local/bin/vibemux
+cd vibemux
+make install
 ```
 
-または `vibemux` スクリプトを `$PATH` の通った場所にコピーするだけでも OK です。
+`make install` は `~/.local/bin/vibemux` に絶対パスでシンボリックリンクを作成します。`~/.local/bin` が `$PATH` に含まれない場合は、追加方法を案内します。
+
+`make` を使いたくない場合は、`vibemux` スクリプトを `$PATH` の通った場所に直接コピーしても動きます。
 
 ## 使い方
 
@@ -47,18 +49,16 @@ vibemux list                       # アクティブなセッション一覧
 
 | 変数 | 説明 | デフォルト |
 |---|---|---|
-| `VIBEMUX_PANE_TOP_LEFT` | 左上ペインのコマンド | *(シェル)* |
-| `VIBEMUX_PANE_BOTTOM_LEFT` | 左下ペインのコマンド | `lazygit` |
+| `VIBEMUX_PANE_LEFT` | 左ペインのコマンド | `lazygit` |
 | `VIBEMUX_PANE_RIGHT` | 右ペインのコマンド | *(シェル)* |
 | `VIBEMUX_RIGHT_RATIO` | 右ペインの幅 (%) | `70` |
-| `VIBEMUX_FOCUS` | 起動時のフォーカス: `right`, `top-left`, `bottom-left` | `right` |
+| `VIBEMUX_FOCUS` | 起動時のフォーカス: `right`, `left` | `right` |
 
 ### 設定ファイル
 
 ```bash
 # ~/.config/vibemux/config
-VIBEMUX_PANE_TOP_LEFT="yazi"
-VIBEMUX_PANE_BOTTOM_LEFT="lazygit"
+VIBEMUX_PANE_LEFT="lazygit"
 VIBEMUX_PANE_RIGHT="claude --resume"
 VIBEMUX_RIGHT_RATIO=70
 VIBEMUX_FOCUS=right
@@ -68,24 +68,23 @@ VIBEMUX_FOCUS=right
 
 ### 設定例
 
-**Claude Code + yazi + lazygit**（おすすめ）:
+**Claude Code + lazygit**（おすすめ）:
 
 ```bash
 VIBEMUX_PANE_RIGHT="claude --resume" vibemux new dev
 ```
 
-**Aider + lf + tig:**
+**Aider + tig:**
 
 ```bash
-VIBEMUX_PANE_TOP_LEFT="lf"
-VIBEMUX_PANE_BOTTOM_LEFT="tig"
+VIBEMUX_PANE_LEFT="tig"
 VIBEMUX_PANE_RIGHT="aider"
 ```
 
 **ミニマル構成 — AI アシスタントのみ:**
 
 ```bash
-VIBEMUX_PANE_TOP_LEFT="" VIBEMUX_PANE_BOTTOM_LEFT="" VIBEMUX_PANE_RIGHT="claude" vibemux new focus
+VIBEMUX_PANE_LEFT="" VIBEMUX_PANE_RIGHT="claude" vibemux new focus
 ```
 
 ## コントリビュート
