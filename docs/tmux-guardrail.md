@@ -9,6 +9,9 @@ vibemux は tmux を AI と人が同じ画面で開発するための土台と�
 
 ガードレールの第一段は Issue #31 で実装する **PATH shim**（`$PATH` 先頭に置く `tmux` ラッパー）であり、許可リストを通過したコマンドのみ本物の tmux に委譲する。
 
+> **実装ステータス**: PATH shim 本体は **Issue #31（Phase A）で実装済み**（`.claude/bin/tmux`）。
+> `kill-session` のセッション識別は **Phase A**（プレフィックスチェックのみ）であり、TSV 検証を含む **Phase AB** は同設計書（`docs/tmux-kill-session-identification.md`）の規定どおりフォローアップ Issue で対応する。
+
 しかし PATH shim は次の経路で容易にバイパスされる:
 
 - `/usr/bin/tmux kill-server` のような **絶対パス直叩き**
@@ -240,6 +243,37 @@ Issue #31（PATH shim 実装）または専用の実装 Issue で本設計を実
 - **macOS 以外の Phase B**: bwrap（Linux）対応は vibecorp の隔離レイヤ拡張と連動し、Phase 2 以降に着手する
 - **shim ディレクトリ位置の絶対化**: `VIBECORP_SHIM_DIR` を sandbox-exec の `(param ...)` として渡す具体的な install.sh 改修は Issue #31 で扱う
 - **誤検知時のサプレッション**: 大量の `direct` ログが出る環境で個別ルールを除外する仕組み（allowlist）は本設計のスコープ外。将来 `~/.config/vibemux/guardrail-allowlist` 等で対応する余地を残す
+
+## Phase A 実装ノート（Issue #31 で追加）
+
+PATH shim 本体は `.claude/bin/tmux` に配置済み。`.claude/bin/activate.sh` を `source` することで `$PATH` 先頭に追加される。
+
+### 実装サマリ
+
+| 項目 | 実装 |
+|---|---|
+| 絶対禁止 | `kill-server` / `set-hook` / `bind-key`(`bind`) / `unbind-key`(`unbind`) / `switch-client`(`switchc`) / `detach-client`(`detach`) / `set-option`(`set`) `-g`/`-s` / `set-window-option`(`setw`) `-g` / `set-environment`(`setenv`) `-g` / `synchronize-panes` ON 全経路 |
+| 条件付き許可 | `kill-session`: 引数構文 + `${VIBEMUX_AI_SESSION_PREFIX:-vbx-}` プレフィックスチェック（**Phase A**: TSV 検証はフォローアップ Issue） |
+| 実体 tmux 解決 | shim 自身の絶対パスを `$PATH` から `grep -vxF` で除外 |
+| ログ | `<vibecorp_stamp_dir>/tmux-direct-exec.log`（`common.sh` 不在時はフォールバック） |
+| 抑制 | `VIBEMUX_SHIM_QUIET_PHASE_A=1` で Phase A WARN を抑制 |
+
+### ログレコード規約（Phase A 確定）
+
+```text
+<ISO8601 timestamp>\tevent=<event>\troute=<route>\ttarget=<target>\tcommand=<原コマンド>
+```
+
+- `<event>`: `kill-session-denied` / `forbidden-denied`（将来 `*-allowed` を追加可能、未知 event はスキップ）
+- `<route>`: `prefix-blanket` / `prefix-target-required` / `prefix-non-name-target` / `prefix-mismatch` / `forbidden-<subcommand>`
+- `<target>` / `<command>`: tab/newline/制御文字をサニタイズ（tab/CR/LF→空白、その他制御文字→`?`）して 1 レコードを 1 行に収める
+- **フィールド順は固定**。新規フィールドは末尾追加のみ。ログ解析側は未知フィールド・未知 event/route 値をスキップする規約
+
+### 残タスク（フォローアップ）
+
+- Phase AB: TSV 登録 + 孤立掃除 + flock（`docs/tmux-kill-session-identification.md` の正式設計に従う）
+- Phase B: `sandbox-exec` / `bwrap` 統合（本ドキュメントの 2 段階防御モデル「Phase B」として継続）
+- shim 起動オーバーヘッドのキャッシュ最適化（計測ベースで判断）
 
 ## 参照
 

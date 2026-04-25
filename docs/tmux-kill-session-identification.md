@@ -240,9 +240,19 @@ ${XDG_CACHE_HOME:-$HOME/.cache}/vibecorp/state/<repo-id>/tmux-direct-exec.log
 
 | Phase | 構成 | 状態 |
 |---|---|---|
-| Phase A | 命名規則のみ（プレフィックスチェック） | 暫定実装可 |
-| Phase AB | + TSV 登録 / 孤立エントリ掃除 / flock | **本ドキュメントが規定する正式実装** |
+| Phase A | 命名規則のみ（プレフィックスチェック） | **Issue #31 で実装済み**（`.claude/bin/tmux`） |
+| Phase AB | + TSV 登録 / 孤立エントリ掃除 / flock | **本ドキュメントが規定する正式実装**。Issue #31 配下のフォローアップ Issue で対応 |
 | Phase ABC | + tmux user-option（`@vibecorp-owner=ai`） | 将来拡張（#31 の `set-option -t <session>` 許可確定後） |
+
+### Phase A 実装の差異
+
+Issue #31 で実装した Phase A は本設計書の擬似コードのうち以下を採用している:
+
+- **採用**: 引数構文チェック（`-a` / target-required / `-t` 複数 / `:` `$` `=` ターゲット構文拒否）
+- **採用**: プレフィックスチェック（`${VIBEMUX_AI_SESSION_PREFIX:-vbx-}`、グロブ展開対策として `case` + クォート）
+- **未採用（Phase AB に委譲）**: 第 2 層 TSV 登録確認 / 孤立エントリ掃除 / flock
+- **追加実装**: `VIBEMUX_SHIM_QUIET_PHASE_A=1` で過渡期 WARN を抑制可能
+- **追加実装**: prefix-mismatch 時に workaround ヒント（実体 tmux 直叩き or REPL）を stderr に出力
 
 ## `vibemux new` 経由セッションの扱い
 

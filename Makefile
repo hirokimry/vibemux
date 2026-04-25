@@ -4,7 +4,7 @@ setup-hooks:
 	git config core.hooksPath .githooks
 
 lint:
-	shellcheck vibemux .githooks/pre-commit .githooks/pre-push
+	shellcheck vibemux .githooks/pre-commit .githooks/pre-push .claude/bin/tmux
 
 test:
 	@if [ -d tests ]; then \
