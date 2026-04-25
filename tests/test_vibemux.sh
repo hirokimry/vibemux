@@ -40,6 +40,20 @@ assert_output_contains() {
   fi
 }
 
+assert_output_not_contains() {
+  local desc="$1" pattern="$2"
+  shift 2
+  local output
+  output=$("$@" 2>&1) || true
+  if echo "$output" | grep -qE "$pattern"; then
+    echo "  FAIL: $desc (unexpected pattern '$pattern' found in output)"
+    ((failed++))
+  else
+    echo "  PASS: $desc"
+    ((passed++))
+  fi
+}
+
 echo "=== vibemux test suite ==="
 echo
 
@@ -105,6 +119,8 @@ echo "[env var defaults]"
 assert_output_contains "usage shows VIBEMUX_PANE_LEFT" "VIBEMUX_PANE_LEFT" "$VIBEMUX" help
 assert_output_contains "usage shows VIBEMUX_PANE_RIGHT" "VIBEMUX_PANE_RIGHT" "$VIBEMUX" help
 assert_output_contains "usage shows VIBEMUX_CONFIG" "VIBEMUX_CONFIG" "$VIBEMUX" help
+assert_output_not_contains "usage does not show VIBEMUX_PANE_TOP_LEFT" "VIBEMUX_PANE_TOP_LEFT" "$VIBEMUX" help
+assert_output_not_contains "usage does not show VIBEMUX_PANE_BOTTOM_LEFT" "VIBEMUX_PANE_BOTTOM_LEFT" "$VIBEMUX" help
 echo
 
 # ── Nested tmux session detection ────────────────────────────
