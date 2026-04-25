@@ -1,0 +1,5 @@
+#!/bin/bash
+# fake-tmux: テスト専用。shim から exec されたことを示すために
+# プレフィックス付きで全引数を stdout に出力して exit 0
+echo "fake-tmux: $*"
+exit 0

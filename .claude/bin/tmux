@@ -1,0 +1,361 @@
+#!/bin/bash
+# tmux — vibemux PATH shim
+#
+# 目的:
+#   AI エージェントが破壊的な tmux コマンドを発行しても本物の tmux に届かないよう、
+#   $PATH 先頭に置かれて呼び出しを横取りし、許可リストを通過したコマンドのみ
+#   実体 tmux に exec する。
+#
+# 設計:
+#   docs/tmux-guardrail.md / docs/tmux-kill-session-identification.md の Phase A
+#   （プレフィックスチェックのみ、TSV 統合は Phase AB に委ねる）。
+#
+# 制約:
+#   docs/design-philosophy.md「コマンドリダイレクト・フォールバックの禁止」遵守。
+#   2>/dev/null, || true は使わない。source の存在確認・command -v は許容。
+#
+# 関連:
+#   #31 / #30 / #34 / #35
+
+set -euo pipefail
+
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+SELF_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+
+VIBEMUX_AI_SESSION_PREFIX_DEFAULT="vbx-"
+PREFIX="${VIBEMUX_AI_SESSION_PREFIX:-$VIBEMUX_AI_SESSION_PREFIX_DEFAULT}"
+
+ORIG_ARGS=("$@")
+# %q で各引数をシェル可逆形式にクォート → ログ内で引数境界を保持する
+ORIG_COMMAND="$(printf 'tmux'; printf ' %q' "$@")"
+
+# ── ログ出力先解決 ────────────────────────────────────────────
+# common.sh があれば vibecorp_stamp_dir を再利用。なければ最小再実装で
+# 同じ <repo-id> 体系（<sanitized-basename>-<sha8>）を維持する。
+
+_compute_repo_id_fallback() {
+  local toplevel base sha
+  if toplevel=$(git -C "${CLAUDE_PROJECT_DIR:-$PWD}" rev-parse --show-toplevel 2>/dev/null); then
+    :
+  else
+    toplevel="${CLAUDE_PROJECT_DIR:-$PWD}"
+  fi
+  base=$(printf '%s' "$(basename "$toplevel")" | tr -cs 'A-Za-z0-9._-' '_')
+  if command -v shasum >/dev/null 2>&1; then
+    sha=$(printf '%s' "$toplevel" | shasum -a 256 | cut -c1-8)
+  elif command -v sha256sum >/dev/null 2>&1; then
+    sha=$(printf '%s' "$toplevel" | sha256sum | cut -c1-8)
+  elif command -v openssl >/dev/null 2>&1; then
+    sha=$(printf '%s' "$toplevel" | openssl dgst -sha256 | awk '{print substr($NF, 1, 8)}')
+  else
+    sha="00000000"
+  fi
+  printf '%s-%s' "$base" "$sha"
+}
+
+_compute_log_dir() {
+  # shim 自身の隣にある common.sh を固定で参照する（CLAUDE_PROJECT_DIR 経由の
+  # パス制御を許さない: 任意ファイル source の経路を排除）
+  local common_sh="$SELF_DIR/../lib/common.sh"
+  if [ -f "$common_sh" ] && [ "${VIBEMUX_SHIM_FORCE_FALLBACK:-0}" != "1" ]; then
+    # shellcheck source=/dev/null
+    source "$common_sh"
+    vibecorp_stamp_dir
+    return
+  fi
+  local cache_root
+  if [[ "${XDG_CACHE_HOME:-}" == /* ]]; then
+    cache_root="${XDG_CACHE_HOME}"
+  else
+    cache_root="${HOME}/.cache"
+  fi
+  printf '%s/vibecorp/state/%s' "$cache_root" "$(_compute_repo_id_fallback)"
+}
+
+LOG_DIR="$(_compute_log_dir)"
+LOG_FILE="${LOG_DIR}/tmux-direct-exec.log"
+
+sanitize_log_field() {
+  printf '%s' "$1" | tr '\t\n\r' '   ' | LC_ALL=C sed 's/[[:cntrl:]]/?/g'
+}
+
+write_log() {
+  local event="$1" route="$2" target="$3" command="$4"
+  local timestamp safe_target safe_command
+  timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  safe_target=$(sanitize_log_field "$target")
+  safe_command=$(sanitize_log_field "$command")
+  # umask に依存せず常に 700/600 で作成する（共有ホストでの情報漏洩を防ぐ）
+  mkdir -p "$LOG_DIR"
+  chmod 700 "$LOG_DIR"
+  if [ ! -e "$LOG_FILE" ]; then
+    : > "$LOG_FILE"
+    chmod 600 "$LOG_FILE"
+  fi
+  printf '%s\tevent=%s\troute=%s\ttarget=%s\tcommand=%s\n' \
+    "$timestamp" "$event" "$route" "$safe_target" "$safe_command" \
+    >> "$LOG_FILE"
+}
+
+# ── 実体 tmux 解決 ────────────────────────────────────────────
+
+resolve_real_tmux() {
+  local self_dir="$1"
+  local path_without_self
+  path_without_self=$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF -- "$self_dir" | tr '\n' ':')
+  path_without_self="${path_without_self%:}"
+  if [ -z "$path_without_self" ]; then
+    return 1
+  fi
+  PATH="$path_without_self" command -v tmux
+}
+
+REAL_TMUX=""
+if _r=$(resolve_real_tmux "$SELF_DIR"); then
+  REAL_TMUX="$_r"
+fi
+unset _r
+if [ -z "$REAL_TMUX" ]; then
+  printf 'vibemux-shim: tmux 実体が見つかりません（PATH から %s を除外しても tmux が見つかりませんでした）\n' "$SELF_DIR" >&2
+  exit 127
+fi
+
+# ── 引数解析 ──────────────────────────────────────────────────
+
+# extract_subcommand: グローバルオプションをスキップしてサブコマンドを返す
+# 値を取るオプション (-f file, -L socket, -S socket-path, -T features) は引数値もスキップ
+extract_subcommand() {
+  local i=1
+  local n=$#
+  while [ "$i" -le "$n" ]; do
+    local a="${!i}"
+    case "$a" in
+      -2|-C|-CC|-N|-u|-v|-V) i=$((i + 1)) ;;
+      -f|-L|-S|-T) i=$((i + 2)) ;;
+      --)
+        i=$((i + 1))
+        if [ "$i" -le "$n" ]; then
+          printf '%s' "${!i}"
+        else
+          printf '(no-command)'
+        fi
+        return
+        ;;
+      -*) i=$((i + 1)) ;;
+      *) printf '%s' "$a"; return ;;
+    esac
+  done
+  printf '(no-command)'
+}
+
+# extract_subcommand_args: サブコマンド以降の引数を NUL 区切りで出力
+# サブコマンド自身は含まない
+extract_subcommand_args() {
+  local i=1
+  local n=$#
+  local found=0
+  while [ "$i" -le "$n" ]; do
+    local a="${!i}"
+    if [ "$found" -eq 1 ]; then
+      printf '%s\0' "$a"
+      i=$((i + 1))
+      continue
+    fi
+    case "$a" in
+      -2|-C|-CC|-N|-u|-v|-V) i=$((i + 1)) ;;
+      -f|-L|-S|-T) i=$((i + 2)) ;;
+      --) found=1; i=$((i + 1)) ;;
+      -*) i=$((i + 1)) ;;
+      *) found=1; i=$((i + 1)) ;;
+    esac
+  done
+}
+
+SUBCOMMAND="$(extract_subcommand "${ORIG_ARGS[@]+"${ORIG_ARGS[@]}"}")"
+
+SUBCMD_ARGS=()
+while IFS= read -r -d '' a; do
+  SUBCMD_ARGS+=("$a")
+done < <(extract_subcommand_args "${ORIG_ARGS[@]+"${ORIG_ARGS[@]}"}")
+
+# ── 拒否ヘルパ ────────────────────────────────────────────────
+
+deny_forbidden() {
+  local subcmd="$1" reason="$2"
+  printf 'vibemux-shim: tmux %s を拒否しました: %s\n' "$subcmd" "$reason" >&2
+  write_log "forbidden-denied" "forbidden-${subcmd}" "" "$ORIG_COMMAND"
+  exit 1
+}
+
+deny_kill_session() {
+  local route="$1" target="$2" reason="$3" with_hint="${4:-0}"
+  printf 'vibemux-shim: tmux kill-session を拒否しました: %s\n' "$reason" >&2
+  if [ "$with_hint" = "1" ]; then
+    printf 'ヒント: 自分で作成したセッションを kill する場合は実体 tmux を直接呼んでください: %s kill-session -t %s\n' \
+      "${REAL_TMUX:-tmux}" "$target" >&2
+    printf '       または tmux REPL から :kill-session -t %s を実行できます。\n' "$target" >&2
+  fi
+  write_log "kill-session-denied" "$route" "$target" "$ORIG_COMMAND"
+  exit 1
+}
+
+# ── フラグ・値検出 ────────────────────────────────────────────
+
+# contains_global_flag: -g / -s / 結合フラグ (-ag, -ga, -gqu) を検出
+# 呼び出し: contains_global_flag "${SUBCMD_ARGS[@]}"
+contains_global_flag() {
+  local seen_double_dash=0
+  local arg
+  for arg in "$@"; do
+    if [ "$seen_double_dash" -eq 1 ]; then
+      continue
+    fi
+    case "$arg" in
+      --) seen_double_dash=1 ;;
+      -*g*|-*s*) return 0 ;;
+    esac
+  done
+  return 1
+}
+
+# is_synchronize_panes_on: フラグを除いた最初の非フラグ引数2つを <option-name> <value> として
+# 取り出し、option-name が synchronize-panes で value が on/1/true の場合に真
+# 呼び出し: is_synchronize_panes_on "${SUBCMD_ARGS[@]}"
+is_synchronize_panes_on() {
+  local seen_double_dash=0
+  local skip_next=0
+  local positional=()
+  local arg lower
+  for arg in "$@"; do
+    if [ "$skip_next" -eq 1 ]; then
+      skip_next=0
+      continue
+    fi
+    if [ "$seen_double_dash" -eq 1 ]; then
+      positional+=("$arg")
+      continue
+    fi
+    case "$arg" in
+      --) seen_double_dash=1 ;;
+      -t) skip_next=1 ;;
+      -*) ;;
+      *) positional+=("$arg") ;;
+    esac
+  done
+  [ "${#positional[@]}" -ge 2 ] || return 1
+  [ "${positional[0]}" = "synchronize-panes" ] || return 1
+  lower=$(printf '%s' "${positional[1]}" | tr '[:upper:]' '[:lower:]')
+  case "$lower" in
+    on|1|true) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# ── kill-session Phase A 検証 ────────────────────────────────
+
+# validate_kill_session: SUBCMD_ARGS（kill-session 以降の引数）を検証する
+# 呼び出し: validate_kill_session "${SUBCMD_ARGS[@]}"
+# 不正なら deny_kill_session で exit、正常なら return 0
+validate_kill_session() {
+  local target=""
+  local target_count=0
+  local i=1
+  local n=$#
+  local arg
+  while [ "$i" -le "$n" ]; do
+    arg="${!i}"
+    case "$arg" in
+      -a)
+        deny_kill_session "prefix-blanket" "" "全セッション削除（-a）は許可されていません"
+        ;;
+      -t)
+        if [ "$i" -ge "$n" ]; then
+          deny_kill_session "prefix-target-required" "" "-t の後にターゲットが必要です"
+        fi
+        i=$((i + 1))
+        target="${!i}"
+        target_count=$((target_count + 1))
+        ;;
+      *) ;;
+    esac
+    i=$((i + 1))
+  done
+
+  if [ "$target_count" -eq 0 ]; then
+    deny_kill_session "prefix-target-required" "" "セッション名（-t <name>）の指定が必須です"
+  fi
+  if [ "$target_count" -gt 1 ]; then
+    deny_kill_session "prefix-target-required" "$target" "-t の複数指定は許可されていません"
+  fi
+
+  case "$target" in
+    :*|\$*|=*)
+      deny_kill_session "prefix-non-name-target" "$target" "ターゲット '${target}' はセッション名ではありません（:idx / \$id / =prefix は使用不可）"
+      ;;
+  esac
+
+  # "${PREFIX}" のクォートは必須。外すと case パターンとして PREFIX 内の glob
+  # メタ文字（*, ?, [...]) が展開され、`VIBEMUX_AI_SESSION_PREFIX='*'` で全許可
+  # されるバイパスを許す（テスト [prefix glob safety] でカバー）。
+  case "$target" in
+    "${PREFIX}"*) ;;
+    *)
+      deny_kill_session "prefix-mismatch" "$target" "'${target}' は AI 作成のセッションではありません（プレフィックス不一致: ${PREFIX}）" 1
+      ;;
+  esac
+}
+
+# ── サブコマンドディスパッチ ──────────────────────────────────
+
+case "$SUBCOMMAND" in
+  kill-server)
+    deny_forbidden "kill-server" "全セッション破壊コマンドは許可されていません"
+    ;;
+  set-hook)
+    deny_forbidden "set-hook" "他エージェントへの干渉を防ぐため許可されていません"
+    ;;
+  bind-key|bind)
+    deny_forbidden "$SUBCOMMAND" "ユーザー操作体験の破壊を防ぐため許可されていません"
+    ;;
+  unbind-key|unbind)
+    deny_forbidden "$SUBCOMMAND" "ユーザー操作体験の破壊を防ぐため許可されていません"
+    ;;
+  switch-client|switchc)
+    deny_forbidden "$SUBCOMMAND" "ユーザーが見ている画面の強制変更は許可されていません"
+    ;;
+  detach-client|detach)
+    deny_forbidden "$SUBCOMMAND" "他クライアントの切断は許可されていません"
+    ;;
+  run-shell|run)
+    # tmux run-shell は任意シェルコマンドを実行できるため、本 shim の
+    # 禁止リスト全体（kill-server 等）を迂回する経路になりうる。
+    deny_forbidden "$SUBCOMMAND" "任意シェルコマンドの実行は禁止コマンド迂回経路となるため許可されていません"
+    ;;
+  source-file|source)
+    # tmux source-file は設定ファイルを読み込み、bind-key 等の禁止操作を
+    # 復活させる経路となるため拒否する。
+    deny_forbidden "$SUBCOMMAND" "設定ファイル読み込みは禁止操作の復活経路となるため許可されていません"
+    ;;
+  kill-pane|killp)
+    deny_forbidden "$SUBCOMMAND" "ユーザーの作業ペイン破壊につながるため許可されていません"
+    ;;
+  set-option|set|set-window-option|setw|set-environment|setenv)
+    if contains_global_flag "${SUBCMD_ARGS[@]+"${SUBCMD_ARGS[@]}"}"; then
+      deny_forbidden "$SUBCOMMAND" "グローバル/サーバー設定変更（-g / -s）は許可されていません"
+    fi
+    if is_synchronize_panes_on "${SUBCMD_ARGS[@]+"${SUBCMD_ARGS[@]}"}"; then
+      deny_forbidden "$SUBCOMMAND" "synchronize-panes ON はユーザーフロー破壊のため許可されていません"
+    fi
+    exec "$REAL_TMUX" "${ORIG_ARGS[@]+"${ORIG_ARGS[@]}"}"
+    ;;
+  kill-session|ks)
+    validate_kill_session "${SUBCMD_ARGS[@]+"${SUBCMD_ARGS[@]}"}"
+    if [ "${VIBEMUX_SHIM_QUIET_PHASE_A:-0}" != "1" ]; then
+      printf 'vibemux-shim: WARN Phase AB 未実装。プレフィックスチェックのみで許可します（follow-up Issue で TSV 検証が追加されます）\n' >&2
+    fi
+    exec "$REAL_TMUX" "${ORIG_ARGS[@]+"${ORIG_ARGS[@]}"}"
+    ;;
+  *)
+    exec "$REAL_TMUX" "${ORIG_ARGS[@]+"${ORIG_ARGS[@]}"}"
+    ;;
+esac
