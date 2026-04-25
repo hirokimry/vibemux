@@ -200,6 +200,36 @@ hooks:
 - **インストール時に反映**: `install.sh` 実行時（初回・`--update` 両方）にトグル設定を評価し、無効化されたファイルはコピー対象から除外・削除される
 - **settings.json にも反映**: 無効化された hooks は `settings.json` の hooks エントリからも除外される
 
+### git 操作のスコープ一貫性（MUST）
+
+`git status` による変更検知スコープと `git add` のスコープを一致させること。
+
+- NG: `git status --porcelain`（全体検知）+ `git add .claude/rules/ .claude/knowledge/`（絞り込み追加）
+- OK: `git status --porcelain .claude/rules/ .claude/knowledge/`（絞り込み検知）+ `git add .claude/rules/ .claude/knowledge/`
+
+不一致だと「検知はするが git add の対象外」な変更を巻き込み、後続ステップが不正な前提で進む原因になる。
+（CodeRabbit 指摘, PR #20 より昇格）
+
+### ベースブランチ名のハードコード禁止（MUST）
+
+スキル内でベースブランチ名をハードコードしない。`gh pr view --json baseRefName` 等で動的に取得すること。
+
+- NG: `git checkout main`
+- OK: `git checkout {baseRefName}`
+
+`main` 以外をベースブランチとする PR（`develop`、`staging` 等）で誤動作する。
+（PR #20 修正コミット 05dd4969 より昇格）
+
+### グローバルスキル依存のフォールバック明示（SHOULD）
+
+スキルが他のグローバルスキル（`/commit` 等）に依存する場合、そのスキルが利用できない場合のフォールバック手順を SKILL.md に明記すること。
+
+- 例: `/commit スキル（グローバル定義）を使用するか、直接 `git commit -m "..."` を実行する。`
+
+スキル依存が原因で動かない状況は初期体験を損なう。
+（PR #20 より昇格）
+
+
 ## リポジトリインフラ設定
 
 vibecorp は Claude Code の実行層だけでなく、開発ワークフロー全体を支えるリポジトリインフラ設定もテンプレートとして提供する。

@@ -23,3 +23,10 @@
 
 - リスト系エンドポイント（comments, reviews 等）は `--paginate` を付ける
 - 未指定だと最初の30件のみ返り、以降が欠落する
+
+## `git status --porcelain` のスコープ一致
+
+- 変更検知に `git status --porcelain <paths>` を使う場合、後続の `git add <paths>` と同じパスを指定する
+- 検知スコープと add スコープが一致しないと、検知はするが add 対象外のファイルが残る不整合になる
+  - 悪い例: `git status --porcelain`（全体）+ `git add .claude/rules/ .claude/knowledge/`（限定）
+  - 良い例: `git status --porcelain .claude/rules/ .claude/knowledge/` + `git add .claude/rules/ .claude/knowledge/`

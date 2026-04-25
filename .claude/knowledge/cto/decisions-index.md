@@ -5,7 +5,8 @@
 
 ## エントリ
 
-（エントリはまだありません）
+- 2026-04-25 — PR #27, #43 技術知見 — `.claude/hooks/` 等は vibecorp plugin 自動生成物。直接修正不可、upstream で対応
+- 2026-04-25 — PR #20 技術知見 — `git status --porcelain` スコープ一致ルール・ベースブランチ `{baseRefName}` 参照
 
 ## 運用ルール
 

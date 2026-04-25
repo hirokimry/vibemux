@@ -1,0 +1,177 @@
+[
+  {
+    "body": "未解決コメント判定ロジックを追加しました。review-to-rulesと同じin_reply_to_idベースの判定を採用。(https://github.com/hirokimry/vibemux/pull/20/commits/05dd4969bb63cd62eb0105aadf6f1564f8caf078)",
+    "id": 2964377386,
+    "path": ".claude/skills/pr-merge-loop/SKILL.md",
+    "pr": 20,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "git status --porcelain による変更検知ロジックを追加しました。(https://github.com/hirokimry/vibemux/pull/20/commits/05dd4969bb63cd62eb0105aadf6f1564f8caf078)",
+    "id": 2964377455,
+    "path": ".claude/skills/pr-merge-loop/SKILL.md",
+    "pr": 20,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "git checkout {baseRefName} に修正しました。(https://github.com/hirokimry/vibemux/pull/20/commits/05dd4969bb63cd62eb0105aadf6f1564f8caf078)",
+    "id": 2964377529,
+    "path": ".claude/skills/pr-merge-loop/SKILL.md",
+    "pr": 20,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "/commit はグローバルスキルとして定義済みですが、フォールバックとして直接 git commit の手順も追記しました。(https://github.com/hirokimry/vibemux/pull/20/commits/05dd4969bb63cd62eb0105aadf6f1564f8caf078)",
+    "id": 2964377599,
+    "path": ".claude/skills/pr-review-fix/SKILL.md",
+    "pr": 20,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "エージェント定義はPR #18で追加済み（未マージ）。具体的なshellcheckコマンドとAgent ツール経由の起動手順を追記しました。(https://github.com/hirokimry/vibemux/pull/20/commits/05dd4969bb63cd62eb0105aadf6f1564f8caf078)",
+    "id": 2964377700,
+    "path": ".claude/skills/review/SKILL.md",
+    "pr": 20,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "`@hirokimry` ご対応ありがとうございます！`git checkout {baseRefName}` への修正を確認しました。これで `main` 以外のブランチ（`develop`, `staging` など）をベースとするPRでも正しく動作します。✅\n\n<!-- <review_comment_addressed> -->\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 2964378473,
+    "path": ".claude/skills/pr-merge-loop/SKILL.md",
+    "pr": 20,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "<details>\n<summary>🧩 Analysis chain</summary>\n\n🏁 Script executed:\n```\n#!/bin/bash\n# Check the updated SKILL.md file content around the relevant section\ngh api repos/hirokimry/vibemux/commits/05dd4969bb63cd62eb0105aadf6f1564f8caf078 --jq '.files[] | select(.filename == \".claude/skills/pr-merge-loop/SKILL.md\") | .patch'\n```\n\nLength of output: 1351\n\n---\n\n\n\n</details>\n\n`@hirokimry`、コミット内容を確認しました。対応内容は以下の通りで、元の指摘を適切に解消しています：\n\n1. **未解決コメント判定** — `in_reply_to_id == null` の CodeRabbit コメントIDを取得し、返信済みIDとの差分を `jq --argjson` で算出する2ステップの実装になっており、`review-to-rules` との一貫性が取れています。\n2. **ルール変更検知** — `git status --porcelain` による明示的なチェックが追加され、条件分岐が明確になっています。\n3. **ボーナス修正** — `git checkout main` が `git checkout {baseRefName}` に変更されており、`main` 以外がベースブランチの場合にも対応できるようになっています。\n\nLGTM です！\n\n<!-- <review_comment_addressed> -->\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 2964379052,
+    "path": ".claude/skills/pr-merge-loop/SKILL.md",
+    "pr": 20,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "<details>\n<summary>🧩 Analysis chain</summary>\n\n🏁 Script executed:\n```\n#!/bin/bash\n# Check for global skill definitions (outside .claude/skills/)\nfd -e md \"SKILL.md\" .claude/ --exec cat {} \\; 2>/dev/null | head -20\n\n# Also check if there's a global skills directory or commit skill anywhere\nfd \"commit\" .claude/ -e md 2>/dev/null\nfind .claude/ -name \"*.md\" | xargs grep -l \"commit\" 2>/dev/null | head -10\n\n# Check the updated pr-review-fix SKILL.md for the fallback\ncat .claude/skills/pr-review-fix/SKILL.md\n```\n\nLength of output: 2244\n\n---\n\n\n\n</details>\n\n`@hirokimry` ありがとうございます。更新された SKILL.md を確認しました。Step 4 が以下のように修正されており、グローバルスキルへの言及とフォールバックの直接 `git commit` 手順が両方含まれています：\n\n> `/commit` スキル（グローバル定義）を使用するか、直接 `git commit` を実行する。\n\nこれで実行時に `/commit` スキルが利用できない場合でも安全に動作します。対応を確認しました。\n\n<!-- <review_comment_addressed> -->\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 2964379270,
+    "path": ".claude/skills/pr-review-fix/SKILL.md",
+    "pr": 20,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "<details>\n<summary>🧩 Analysis chain</summary>\n\n🏁 Script executed:\n```\n#!/bin/bash\n# Check the updated SKILL.md after the fix commit\ngit show 05dd4969bb63cd62eb0105aadf6f1564f8caf078 -- .claude/skills/review/SKILL.md\n\n# Also check if PR `#18` has agent definitions\ngh pr view 18 --repo hirokimry/vibemux --json title,body,files | jq '{title: .title, files: [.files[].path]}'\n```\n\nLength of output: 1712\n\n---\n\n\n\n</details>\n\n`@hirokimry` ありがとうございます。コミット内容と PR `#18` を確認しました。\n\n以下の点がすべて対応されています：\n\n1. **エージェント定義**: PR `#18` で `.claude/agents/security-reviewer.md` と `.claude/agents/docs-reviewer.md` が追加されており、SKILL.md もそのパスを明示的に参照するよう更新されています。\n2. **shellcheck コマンド**: 具体的なコマンド (`shellcheck vibemux .githooks/pre-commit .githooks/pre-push`) が追加され、`*.sh` ファイルも動的に対象追加されることが明記されました。\n3. **並列実行の実装**: 「Agent ツールで複数エージェントを同時起動」と明記され、実行方法が明確になりました。\n\n指摘事項はすべて解決されています。\n\n<!-- <review_comment_addressed> -->\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 2964379352,
+    "path": ".claude/skills/review/SKILL.md",
+    "pr": 20,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "<details>\n<summary>🧩 Analysis chain</summary>\n\n🏁 Script executed:\n```\n#!/bin/bash\ngh api repos/hirokimry/vibemux/commits/05dd4969bb63cd62eb0105aadf6f1564f8caf078 \\\n  --jq '.files[] | {filename, patch}'\n```\n\nLength of output: 2779\n\n---\n\n\n\n</details>\n\n`@hirokimry`、コミット内容を確認しました。\n\n`git status --porcelain .claude/rules/ .claude/knowledge/` による変更検知は適切な実装です。私が提案した `git diff --quiet HEAD` と比較すると、未追跡の新規ファイル（`/review-to-rules` が新しいファイルを生成した場合）も検知できる点で、むしろより堅牢な方法です。パスを `.claude/rules/` と `.claude/knowledge/` に限定しているのも意図した範囲のみを対象としており問題ありません。\n\nまた、同コミットで追加された以下の改善点も確認しました：\n- 未解決コメントの判定ロジック（`in_reply_to_id` を使った返信済み判定）\n- `git checkout main` → `git checkout {baseRefName}` への修正\n\nありがとうございます！\n\n<!-- <review_comment_addressed> -->\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 2964379473,
+    "path": ".claude/skills/pr-merge-loop/SKILL.md",
+    "pr": 20,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "pr-merge-loop を全面書き直し。CI判定ロジック（state/conclusion確認、--watch対応、ポーリングフォールバック）、CodeRabbitレビュー待ちの3段階判定、終了条件の明確化、review-to-rules連携の具体コマンドを全て追加。(https://github.com/hirokimry/vibemux/pull/20/commits/de5dc87d9e0f6e042214b343acfcb59712fe6587)",
+    "id": 2964385160,
+    "path": ".claude/skills/pr-merge-loop/SKILL.md",
+    "pr": 20,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "<details>\n<summary>🧩 Analysis chain</summary>\n\n🏁 Script executed:\n```\n#!/bin/bash\ngh api repos/hirokimry/vibemux/commits/de5dc87d9e0f6e042214b343acfcb59712fe6587 --jq '.files[] | select(.filename == \".claude/skills/pr-merge-loop/SKILL.md\") | .patch'\n```\n\nLength of output: 3624\n\n---\n\n\n\n</details>\n\n`@hirokimry`、コミット内容を確認しました。全面的な改善で非常に良い仕上がりです 👍\n\n**確認できた主な改善点：**\n\n| 項目 | 変更内容 |\n|------|----------|\n| 終了条件 | ワークフロー冒頭に明示的なセクションを追加 |\n| CodeRabbitレビュー待ち | 3段階判定（count=0 / 安定 / タイムアウト）で意図が明確 |\n| CI判定 | `--watch --fail-fast` + `state/conclusion` ポーリングフォールバックで堅牢 |\n| review-to-rules連携 | `git add/commit/push` の具体的なコマンドを追加 |\n| エラー動作 | CI失敗時に「ユーザーに判断を委ねる」と緩和、より実用的 |\n\n**1点、軽微な不整合：**\n\n`review-to-rules` 実行後の変更検知が `git status --porcelain`（パスフィルタなし）になりましたが、その後の `git add` はまだ `.claude/rules/ .claude/knowledge/` にスコープされています。rules/knowledge 以外のファイルが変更されていると、検知はするものの `git add` の対象外になります。\n\n意図的であれば問題ありませんが、検知もスコープを合わせる場合は次のように変更できます：\n\n```bash\nif [ -n \"$(git status --porcelain .claude/rules/ .claude/knowledge/)\" ]; then\n```\n\nLGTM です！\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 2964387129,
+    "path": ".claude/skills/pr-merge-loop/SKILL.md",
+    "pr": 20,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "vibecorp テンプレート側の問題のため、vibecorp リポジトリに Issue を起票しました: https://github.com/hirokimry/vibecorp/issues/41",
+    "id": 2967472248,
+    "path": ".claude/rules/mvv.md",
+    "pr": 23,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "vibecorp プラグイン本家側の既知の不整合（`.claude/rules/public-ready.md` 未配布）。本リポジトリは `install.sh --update` の出力をそのままコミットしているため、このリポジトリで修正しても次回更新で上書きされます。本 PR のスコープ外。vibecorp 本家リポジトリで修正する案件として扱います。対応不要。",
+    "id": 3105520885,
+    "path": ".claude/agents/plan-legal.md",
+    "pr": 27,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "vibecorp プラグイン本家側の既知の問題（`protect-branch.sh` の `git commit` 検出バイパス）。本リポジトリは `install.sh --update` の出力をそのままコミットしているため、このリポジトリで修正しても次回更新で上書きされます。本 PR のスコープ外。vibecorp 本家リポジトリで修正する案件として扱います。対応不要。",
+    "id": 3105520928,
+    "path": ".claude/hooks/protect-branch.sh",
+    "pr": 27,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "誤検知。`.claude/lib/common.sh` は `install.sh` が実行時に配布するランタイムファイルで、`.claude/.gitignore` により意図的に untracked 管理（PR diff に現れないのは正常動作）。ローカル・CI 環境では `install.sh --update` 実行後に存在し、sync-gate / review-gate フックは正常動作します。対応不要。",
+    "id": 3105520969,
+    "path": ".claude/hooks/sync-gate.sh",
+    "pr": 27,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "vibecorp プラグイン本家側の既知の問題（`team-auto-approve.sh` のプロセス置換 `<(...)` `>(...)` 検出漏れ）。本リポジトリは `install.sh --update` の出力をそのままコミットしているため、このリポジトリで修正しても次回更新で上書きされます。本 PR のスコープ外。vibecorp 本家リポジトリで修正する案件として扱います。対応不要。",
+    "id": 3105521011,
+    "path": ".claude/hooks/team-auto-approve.sh",
+    "pr": 27,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "`@hirokimry`、ご説明ありがとうございます。コードにも該当箇所に TODO コメントで既知バイパス経路として記載されていることを確認しました。振る舞いについての認識は一致しています。\n\n本リポジトリでの修正は次回 `install.sh --update` 実行時に上書きされるため、このリポジトリでの対応が不要という判断に同意します。\n\nもし vibecorp 本家リポジトリへのバグ報告用として、フォローアップ Issue をこちらで起票しておきましょうか？\n\n---\n\n<details>\n<summary>✏️ Learnings added</summary>\n\n```\nLearnt from: hirokimry\nRepo: hirokimry/vibemux PR: 27\nFile: .claude/hooks/protect-branch.sh:121-157\nTimestamp: 2026-04-18T17:03:49.603Z\nLearning: In the vibemux repository, `.claude/hooks/` and other `.claude/` files are vendored artifacts generated by `install.sh --update` from the upstream vibecorp plugin. Any fixes to these files would be overwritten on the next `install.sh --update` run. Issues with these files should be tracked and fixed in the upstream vibecorp repository, not in vibemux directly.\n```\n\n> Note: Learnings are effective only in the context of similar code segments. To apply general coding guidelines, please configure [review instructions](https://docs.coderabbit.ai/guides/review-instructions). You can manage existing learnings in the [app](https://app.coderabbit.ai/learnings).\n\n</details>\n\n\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 3105521392,
+    "path": ".claude/hooks/protect-branch.sh",
+    "pr": 27,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "`@hirokimry`、ご説明ありがとうございます。了解しました。`.claude/rules/public-ready.md` の欠落は vibecorp 本家側の既知の不整合であり、`install.sh --update` の出力をそのままコミットする構成上、本リポジトリでの修正は次回更新で上書きされるため対応不要とのこと、承知しました。\n\n振る舞い上の問題として vibecorp 本家リポジトリへのフィードバックとして扱う方針に同意します。必要であれば本リポジトリにトラッキング用の Issue を作成することも可能ですが、いかがでしょうか？\n\n\n\n<!-- <review_comment_addressed> -->\n\n(´･ω･`) 上流の問題でしたか、なるほどです。\n\n---\n\n<details>\n<summary>🧠 Learnings used</summary>\n\n```\nLearnt from: CR\nRepo: hirokimry/vibemux PR: 0\nFile: CLAUDE.md:0-0\nTimestamp: 2026-03-20T07:24:49.397Z\nLearning: Check `.claude/rules/` directory for path-specific rules and follow them when they exist\n```\n\n</details>\n\n\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 3105521423,
+    "path": ".claude/agents/plan-legal.md",
+    "pr": 27,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "`@hirokimry` ご説明ありがとうございます。理解しました。`.claude/lib/common.sh` は `install.sh` によるランタイム配布ファイルであり、`.claude/.gitignore` の `lib/` エントリにより意図的に untracked 管理されている設計とのこと、失念していました。誤検知でした。失礼いたしました。\n\n\n\n<!-- <review_comment_addressed> -->\n\n---\n\n<details>\n<summary>✏️ Learnings added</summary>\n\n```\nLearnt from: hirokimry\nRepo: hirokimry/vibemux PR: 27\nFile: .claude/hooks/sync-gate.sh:7-10\nTimestamp: 2026-04-18T17:03:51.924Z\nLearning: In the hirokimry/vibemux repository, `.claude/lib/common.sh` (and the entire `.claude/lib/` directory) is a runtime-distributed file delivered by `install.sh --update` at setup time. It is intentionally untracked via `.claude/.gitignore` (`lib/` entry). Its absence from the git tree is by design — it will exist in local and CI environments after running `install.sh --update`. Do not flag missing `.claude/lib/common.sh` or functions like `normalize_command` / `vibecorp_stamp_path` as errors in code review, as the hooks (sync-gate.sh, review-gate.sh, etc.) that source it will work correctly in properly initialized environments.\n```\n\n> Note: Learnings are effective only in the context of similar code segments. To apply general coding guidelines, please configure [review instructions](https://docs.coderabbit.ai/guides/review-instructions). You can manage existing learnings in the [app](https://app.coderabbit.ai/learnings).\n\n</details>\n\n\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 3105521521,
+    "path": ".claude/hooks/sync-gate.sh",
+    "pr": 27,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "`@hirokimry`、ご説明ありがとうございます。`.claude/hooks/team-auto-approve.sh` が `install.sh --update` によって上書きされる自動生成ファイルである点を確認しました。upstream の vibecorp リポジトリで修正される案件として扱う判断は理にかなっています。このコメントはクローズします。\n\n\n\n<!-- <review_comment_addressed> -->\n\n---\n\n<details>\n<summary>✏️ Learnings added</summary>\n\n```\nLearnt from: hirokimry\nRepo: hirokimry/vibemux PR: 27\nFile: .claude/hooks/team-auto-approve.sh:147-150\nTimestamp: 2026-04-18T17:03:53.661Z\nLearning: In the hirokimry/vibemux repository, files under `.claude/` (including `.claude/hooks/team-auto-approve.sh`, `.claude/agents/`, `.claude/skills/`, etc.) are auto-generated and managed by the vibecorp plugin's `install.sh --update` script. Any local fixes to these files will be overwritten on the next plugin update. Issues found in these files should be tracked as upstream vibecorp plugin bugs, not fixed directly in this repository.\n```\n\n> Note: Learnings are effective only in the context of similar code segments. To apply general coding guidelines, please configure [review instructions](https://docs.coderabbit.ai/guides/review-instructions). You can manage existing learnings in the [app](https://app.coderabbit.ai/learnings).\n\n</details>\n\n\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 3105521524,
+    "path": ".claude/hooks/team-auto-approve.sh",
+    "pr": 27,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "This file is auto-generated by `vibecorp install.sh --update`. Any modifications here would be overwritten on the next update. If this is a genuine issue, it should be fixed upstream in the vibecorp plugin template.",
+    "id": 3131581530,
+    "path": ".claude/agents/ciso.md",
+    "pr": 43,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "This file is auto-generated by `vibecorp install.sh --update`. Any modifications here would be overwritten on the next update. If this is a genuine issue, it should be fixed upstream in the vibecorp plugin template.",
+    "id": 3131581738,
+    "path": ".claude/skills/session-harvest/SKILL.md",
+    "pr": 43,
+    "user": "<reviewer>"
+  },
+  {
+    "body": "`@hirokimry` ご確認ありがとうございます。既存のラーニングにもある通り、`.claude/` 以下のファイルはすべて `install.sh --update` による自動生成物ですね。ご指摘の通り、`ciso` エージェントへの `Write` ツール追加は vibecorp プラグイン側のテンプレートで対応する必要があります。\n\nもしよろしければ、アップストリームへのトラッキング用に GitHub Issue を作成しましょうか？\n\n( ' - ' )~\n\n---\n\n<details>\n<summary>🧠 Learnings used</summary>\n\n```\nLearnt from: hirokimry\nRepo: hirokimry/vibemux PR: 27\nFile: .claude/hooks/team-auto-approve.sh:147-150\nTimestamp: 2026-04-18T17:03:53.661Z\nLearning: In hirokimry/vibemux, treat everything under the `.claude/` directory as plugin-managed/auto-generated by the vibecorp plugin (`install.sh --update`). Do not propose direct code fixes to files in `.claude/` during code review, since they will be overwritten by the next plugin update. If you find bugs or issues in `.claude/` files, document them as upstream vibecorp plugin issues rather than changing the generated files in this repository.\n```\n\n---\n\n```\nLearnt from: hirokimry\nRepo: hirokimry/vibemux PR: 27\nFile: .claude/hooks/sync-gate.sh:7-10\nTimestamp: 2026-04-18T17:03:57.872Z\nLearning: In the hirokimry/vibemux repository, `.claude/lib/common.sh` (and the entire `.claude/lib/` directory) is a runtime-distributed file delivered by `install.sh --update` at setup time. It is intentionally untracked via `.claude/.gitignore` (`lib/` entry). Its absence from the git tree is by design — it will exist in local and CI environments after running `install.sh --update`. Do not flag missing `.claude/lib/common.sh` or functions like `normalize_command` / `vibecorp_stamp_path` as errors in code review, as the hooks (sync-gate.sh, review-gate.sh, etc.) that source it will work correctly in properly initialized environments.\n```\n\n---\n\n```\nLearnt from: hirokimry\nRepo: hirokimry/vibemux PR: 27\nFile: .claude/hooks/protect-branch.sh:121-157\nTimestamp: 2026-04-18T17:03:52.123Z\nLearning: In the vibemux repository, `.claude/hooks/` and other `.claude/` files are vendored artifacts generated by `install.sh --update` from the upstream vibecorp plugin. Any fixes to these files would be overwritten on the next `install.sh --update` run. Issues with these files should be tracked and fixed in the upstream vibecorp repository, not in vibemux directly.\n```\n\n</details>\n\n\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 3131583509,
+    "path": ".claude/agents/ciso.md",
+    "pr": 43,
+    "user": "CodeRabbit"
+  },
+  {
+    "body": "`@hirokimry`、ご確認ありがとうございます。既存のラーニング（`.claude/` 配下は vibecorp plugin によって管理される成果物であること）と一致しており、ローカルへの修正提案は不要でした。失礼しました。\n\nupstream の vibecorp プラグインテンプレート側に `shutdown_response` ハンドラの仕様ギャップとして追跡する必要があれば、このリポジトリに追跡 Issue を作成することもできますが、いかがでしょうか？\n\n---\n\n<details>\n<summary>🧠 Learnings used</summary>\n\n```\nLearnt from: hirokimry\nRepo: hirokimry/vibemux PR: 27\nFile: .claude/hooks/team-auto-approve.sh:147-150\nTimestamp: 2026-04-18T17:03:53.661Z\nLearning: In hirokimry/vibemux, treat everything under the `.claude/` directory as plugin-managed/auto-generated by the vibecorp plugin (`install.sh --update`). Do not propose direct code fixes to files in `.claude/` during code review, since they will be overwritten by the next plugin update. If you find bugs or issues in `.claude/` files, document them as upstream vibecorp plugin issues rather than changing the generated files in this repository.\n```\n\n---\n\n```\nLearnt from: hirokimry\nRepo: hirokimry/vibemux PR: 27\nFile: .claude/hooks/protect-branch.sh:121-157\nTimestamp: 2026-04-18T17:03:52.123Z\nLearning: In the vibemux repository, `.claude/hooks/` and other `.claude/` files are vendored artifacts generated by `install.sh --update` from the upstream vibecorp plugin. Any fixes to these files would be overwritten on the next `install.sh --update` run. Issues with these files should be tracked and fixed in the upstream vibecorp repository, not in vibemux directly.\n```\n\n---\n\n```\nLearnt from: hirokimry\nRepo: hirokimry/vibemux PR: 27\nFile: .claude/hooks/sync-gate.sh:7-10\nTimestamp: 2026-04-18T17:03:57.872Z\nLearning: In the hirokimry/vibemux repository, `.claude/lib/common.sh` (and the entire `.claude/lib/` directory) is a runtime-distributed file delivered by `install.sh --update` at setup time. It is intentionally untracked via `.claude/.gitignore` (`lib/` entry). Its absence from the git tree is by design — it will exist in local and CI environments after running `install.sh --update`. Do not flag missing `.claude/lib/common.sh` or functions like `normalize_command` / `vibecorp_stamp_path` as errors in code review, as the hooks (sync-gate.sh, review-gate.sh, etc.) that source it will work correctly in properly initialized environments.\n```\n\n</details>\n\n\n\n<!-- This is an auto-generated reply by CodeRabbit -->",
+    "id": 3131583756,
+    "path": ".claude/skills/session-harvest/SKILL.md",
+    "pr": 43,
+    "user": "CodeRabbit"
+  }
+]
