@@ -369,3 +369,7 @@ gate hook 失敗時はこのディレクトリ内の `<name>-ok` ファイル有
 - **Public Ready**: セキュリティ情報・特定プロダクト名・ローカルパス依存の混入禁止
 - **品質基準**: 参照元の実装を全網羅し、品質・汎用性・堅牢性で上回る
 - **テスト必須**: hooks / install.sh は自動テスト付き。テストなしで push しない
+
+### tmux kill-session の所有判定（参照）
+
+PATH shim 経由の `kill-session` は AI 作成セッションのみに条件付き許可する。命名規則（プレフィックス）と外部トラッキングファイル（TSV）の AND 条件で判定する設計詳細は [`docs/tmux-kill-session-identification.md`](./tmux-kill-session-identification.md) を参照。

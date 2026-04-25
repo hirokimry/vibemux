@@ -57,6 +57,10 @@ vibemux はユーザーのシェル環境で動作する tmux セッションラ
 
 `VIBEMUX_PANE_*` の値は `tmux send-keys` で各ペインに送信される。環境変数に悪意ある値が設定された場合、そのコマンドが実行される。ユーザー自身が設定する前提のため、外部からの注入経路がない限りリスクは限定的。
 
+### tmux kill-session の所有判定
+
+PATH shim 経由で受け付ける `tmux kill-session` は、AI が作成したセッションのみに条件付き許可される。識別方式（命名規則 + 外部トラッキングファイルの AND 条件、信頼境界、TOCTOU 残存リスク）は [`docs/tmux-kill-session-identification.md`](./tmux-kill-session-identification.md) を参照。
+
 ## データ保護
 
 ### 機密情報の取り扱い
