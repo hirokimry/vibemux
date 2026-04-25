@@ -64,7 +64,7 @@ CISO エージェントが `.claude/knowledge/` 等へ判断記録を書き込�
 ### 対策方針
 
 vibecorp プラグインのエージェント定義テンプレート（`ciso.md`）に
-Write / Bash ツール権限を追加する。upstream 修正が優先。
+Write ツール権限を追加する。upstream 修正が優先。
 
 ---
 
