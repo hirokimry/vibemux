@@ -122,7 +122,7 @@ vibemux は「最初の1画面を立てる道具」です。並列エージェ�
 vibemux が並列時代に提供するのは以下のみです。
 
 - ✅ `vibemux new` で初期 1 画面を立てる
-- ✅ tmux ラッパー（PATH shim）で AI が tmux を壊さないガードレールを提供する
+- 🚧 tmux ラッパー（PATH shim）で AI が tmux を壊さないガードレール（[#31](https://github.com/hirokimry/vibemux/issues/31) で実装予定）
 - ❌ 並列エージェントの管理・集約・命名・終了には関与しない
 
 並列の起動・終了は tmux と git のネイティブ機能（`tmux new-window`、`tmux split-window`、`git worktree add`、`git worktree remove`）に委ねます。
