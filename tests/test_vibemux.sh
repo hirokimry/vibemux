@@ -198,7 +198,7 @@ fi
 
 desc="new with missing right pane command exits 1"
 actual=0
-(unset TMUX; VIBEMUX_PANE_RIGHT=nonexistent_cmd_xyz "$VIBEMUX" new testsession) >/dev/null 2>&1 || actual=$?
+(unset TMUX; VIBEMUX_PANE_LEFT=bash VIBEMUX_PANE_RIGHT=nonexistent_cmd_xyz "$VIBEMUX" new testsession) >/dev/null 2>&1 || actual=$?
 if [[ "$actual" -eq 1 ]]; then
   echo "  PASS: $desc"
   ((passed++))
@@ -208,7 +208,7 @@ else
 fi
 
 desc="new with missing right pane command shows error"
-output=$(unset TMUX; VIBEMUX_PANE_RIGHT=nonexistent_cmd_xyz "$VIBEMUX" new testsession 2>&1) || true
+output=$(unset TMUX; VIBEMUX_PANE_LEFT=bash VIBEMUX_PANE_RIGHT=nonexistent_cmd_xyz "$VIBEMUX" new testsession 2>&1) || true
 if echo "$output" | grep -qE "command not found"; then
   echo "  PASS: $desc"
   ((passed++))
