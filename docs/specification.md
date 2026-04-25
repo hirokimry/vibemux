@@ -242,6 +242,7 @@ tmux の split-window で `-h`（水平分割）を1回だけ行う2ペイン構
 
 - 二重起動防止: `$TMUX` 環境変数による tmux ネスト検知
 - セッション重複防止: 同名セッション存在時のエラー通知
+- ペインコマンド存在チェック: `vibemux new` 実行時に `VIBEMUX_PANE_LEFT` / `VIBEMUX_PANE_RIGHT` の先頭コマンドを `command -v` で確認し、見つからなければエラー停止
 
 ## 並列エージェント時代の vibemux
 

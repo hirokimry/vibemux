@@ -100,6 +100,7 @@ make check         # lint + tests をローカル実行
 
 - [tmux](https://github.com/tmux/tmux) (>= 3.0)
 - Bash (>= 4.0)
+- [lazygit](https://github.com/jesseduffield/lazygit)（デフォルト設定の場合。`VIBEMUX_PANE_LEFT` で変更可）
 
 ## 並列実行
 
