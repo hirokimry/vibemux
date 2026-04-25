@@ -102,6 +102,31 @@ make check         # lint + tests をローカル実行
 - [tmux](https://github.com/tmux/tmux) (>= 3.0)
 - Bash (>= 4.0)
 
+## 並列実行
+
+vibemux は「最初の1画面を立てる道具」です。並列エージェント時代でも役割は変わらず、並列の管理・集約には踏み込みません。詳細な決定経緯は [#30](https://github.com/hirokimry/vibemux/issues/30) を参照してください。
+
+### 役割分担
+
+| 粒度 | 起動主体 | 操作 | 内容 |
+|---|---|---|---|
+| **タブ（フルワークスペース）** | ユーザー | 新タブ → `vibemux new <project>` | vibemux のデフォルトレイアウト（shell + lazygit を中心としたワークスペース）が丸ごと立つ |
+| **ペイン（軽量並列）** | AI エージェント | ペイン追加 + worktree 分離 | shell のみ。lazygit は元の 1 インスタンスを共有 |
+
+- **タブ = 人間の境界**: フルワークスペースが欲しい時はユーザーがタブを作って `vibemux new`
+- **ペイン = AI の境界**: AI が自律的に worktree を切ってペインを追加する
+- **lazygit = 共有の検証手段**: 1 インスタンスで Worktrees タブから `<space>` キーで worktree を切替し、各 worktree の変更を確認する
+
+### vibemux の責務
+
+vibemux が並列時代に提供するのは以下のみです。
+
+- ✅ `vibemux new` で初期 1 画面を立てる
+- 🚧 tmux ラッパー（PATH shim）で AI が tmux を壊さないガードレール（[#31](https://github.com/hirokimry/vibemux/issues/31) で実装予定）
+- ❌ 並列エージェントの管理・集約・命名・終了には関与しない
+
+並列の起動・終了は tmux と git のネイティブ機能（`tmux new-window`、`tmux split-window`、`git worktree add`、`git worktree remove`）に委ねます。
+
 ## ライセンス
 
 MIT
