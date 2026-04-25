@@ -6,7 +6,7 @@
 
 Vibe coding workspace for tmux.
 
-One command launches a 2-pane tmux session — git client and AI coding assistant side by side. Your terminal becomes a fully-equipped vibe coding cockpit.
+One command launches a 2-pane tmux session — git client and AI coding assistant side-by-side. Your terminal becomes a fully-equipped vibe coding cockpit.
 
 ```text
 ┌──────────┬─────────────────────┐
