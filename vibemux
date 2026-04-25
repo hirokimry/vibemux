@@ -55,6 +55,13 @@ resolve_focus_pane() {
   esac
 }
 
+check_command() {
+  local label="$1" cmd="$2"
+  local bin="${cmd%% *}"
+  [[ -z "$bin" ]] && return 0
+  command -v "$bin" >/dev/null 2>&1 || die "command not found: $bin (set by $label)"
+}
+
 # ── Subcommands ────────────────────────────────────────────────
 cmd_new() {
   local session="$1"
@@ -64,6 +71,9 @@ cmd_new() {
   [[ -n "${TMUX:-}" ]] && die "already inside a tmux session (nested sessions are not supported)"
 
   dir="$(cd "$dir" 2>/dev/null && pwd)" || die "directory not found: ${2:-.}"
+
+  check_command VIBEMUX_PANE_LEFT "$VIBEMUX_PANE_LEFT"
+  check_command VIBEMUX_PANE_RIGHT "$VIBEMUX_PANE_RIGHT"
 
   tmux has-session -t "$session" 2>/dev/null && die "session '$session' already exists (use 'vibemux attach $session')"
 
