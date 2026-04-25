@@ -2,7 +2,9 @@
 
 ## 言語
 
-- 応答は日本語で行う（コード・コミットメッセージ・PR本文は英語）
+- 応答・ドキュメント・PR 本文・Issue は日本語
+- コミットメッセージは英語（[Conventional Commits](https://www.conventionalcommits.org/) 慣例に従う）
+- コード内識別子・コメントは英語
 
 ## プロジェクト概要
 
