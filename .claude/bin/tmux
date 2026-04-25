@@ -26,7 +26,8 @@ VIBEMUX_AI_SESSION_PREFIX_DEFAULT="vbx-"
 PREFIX="${VIBEMUX_AI_SESSION_PREFIX:-$VIBEMUX_AI_SESSION_PREFIX_DEFAULT}"
 
 ORIG_ARGS=("$@")
-ORIG_COMMAND="tmux $*"
+# %q で各引数をシェル可逆形式にクォート → ログ内で引数境界を保持する
+ORIG_COMMAND="$(printf 'tmux'; printf ' %q' "$@")"
 
 # ── ログ出力先解決 ────────────────────────────────────────────
 # common.sh があれば vibecorp_stamp_dir を再利用。なければ最小再実装で
@@ -53,10 +54,9 @@ _compute_repo_id_fallback() {
 }
 
 _compute_log_dir() {
-  local common_sh="${CLAUDE_PROJECT_DIR:-}/.claude/lib/common.sh"
-  if [ -z "${CLAUDE_PROJECT_DIR:-}" ]; then
-    common_sh="$SELF_DIR/../lib/common.sh"
-  fi
+  # shim 自身の隣にある common.sh を固定で参照する（CLAUDE_PROJECT_DIR 経由の
+  # パス制御を許さない: 任意ファイル source の経路を排除）
+  local common_sh="$SELF_DIR/../lib/common.sh"
   if [ -f "$common_sh" ] && [ "${VIBEMUX_SHIM_FORCE_FALLBACK:-0}" != "1" ]; then
     # shellcheck source=/dev/null
     source "$common_sh"
@@ -85,7 +85,13 @@ write_log() {
   timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)
   safe_target=$(sanitize_log_field "$target")
   safe_command=$(sanitize_log_field "$command")
+  # umask に依存せず常に 700/600 で作成する（共有ホストでの情報漏洩を防ぐ）
   mkdir -p "$LOG_DIR"
+  chmod 700 "$LOG_DIR"
+  if [ ! -e "$LOG_FILE" ]; then
+    : > "$LOG_FILE"
+    chmod 600 "$LOG_FILE"
+  fi
   printf '%s\tevent=%s\troute=%s\ttarget=%s\tcommand=%s\n' \
     "$timestamp" "$event" "$route" "$safe_target" "$safe_command" \
     >> "$LOG_FILE"
@@ -282,6 +288,9 @@ validate_kill_session() {
       ;;
   esac
 
+  # "${PREFIX}" のクォートは必須。外すと case パターンとして PREFIX 内の glob
+  # メタ文字（*, ?, [...]) が展開され、`VIBEMUX_AI_SESSION_PREFIX='*'` で全許可
+  # されるバイパスを許す（テスト [prefix glob safety] でカバー）。
   case "$target" in
     "${PREFIX}"*) ;;
     *)
@@ -311,6 +320,19 @@ case "$SUBCOMMAND" in
   detach-client|detach)
     deny_forbidden "$SUBCOMMAND" "他クライアントの切断は許可されていません"
     ;;
+  run-shell|run)
+    # tmux run-shell は任意シェルコマンドを実行できるため、本 shim の
+    # 禁止リスト全体（kill-server 等）を迂回する経路になりうる。
+    deny_forbidden "$SUBCOMMAND" "任意シェルコマンドの実行は禁止コマンド迂回経路となるため許可されていません"
+    ;;
+  source-file|source)
+    # tmux source-file は設定ファイルを読み込み、bind-key 等の禁止操作を
+    # 復活させる経路となるため拒否する。
+    deny_forbidden "$SUBCOMMAND" "設定ファイル読み込みは禁止操作の復活経路となるため許可されていません"
+    ;;
+  kill-pane|killp)
+    deny_forbidden "$SUBCOMMAND" "ユーザーの作業ペイン破壊につながるため許可されていません"
+    ;;
   set-option|set|set-window-option|setw|set-environment|setenv)
     if contains_global_flag "${SUBCMD_ARGS[@]+"${SUBCMD_ARGS[@]}"}"; then
       deny_forbidden "$SUBCOMMAND" "グローバル/サーバー設定変更（-g / -s）は許可されていません"
@@ -320,7 +342,7 @@ case "$SUBCOMMAND" in
     fi
     exec "$REAL_TMUX" "${ORIG_ARGS[@]+"${ORIG_ARGS[@]}"}"
     ;;
-  kill-session)
+  kill-session|ks)
     validate_kill_session "${SUBCMD_ARGS[@]+"${SUBCMD_ARGS[@]}"}"
     if [ "${VIBEMUX_SHIM_QUIET_PHASE_A:-0}" != "1" ]; then
       printf 'vibemux-shim: WARN Phase AB 未実装。プレフィックスチェックのみで許可します（follow-up Issue で TSV 検証が追加されます）\n' >&2

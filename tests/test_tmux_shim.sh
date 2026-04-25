@@ -6,6 +6,10 @@
 #
 # - テストごとにログディレクトリ・PATH を制御
 # - 環境変数依存テストはサブシェルで制御（.claude/rules/testing.md）
+#
+# 注: `set -e` は意図的に省略している。shim の拒否ケースは exit 1 で返るが、
+# 各テストはそれを `|| actual=$?` 形式で受けるため、`-e` 下では非ゼロ終了で
+# テスト全体が abort してしまう。`set -uo pipefail` のみ有効化する。
 
 set -uo pipefail
 
@@ -141,6 +145,12 @@ assert_denied "switch-client" "switch-client" switch-client -t target
 assert_denied "switchc (別名)" "switchc" switchc -t target
 assert_denied "detach-client" "detach-client" detach-client -t target
 assert_denied "detach (別名)" "detach" detach
+assert_denied "run-shell (任意シェル実行)" "任意シェル" run-shell echo hello
+assert_denied "run (run-shell 別名)" "任意シェル" run echo hello
+assert_denied "source-file (設定読み込み)" "設定ファイル" source-file /tmp/x
+assert_denied "source (source-file 別名)" "設定ファイル" source /tmp/x
+assert_denied "kill-pane" "ペイン" kill-pane
+assert_denied "killp (kill-pane 別名)" "ペイン" killp -t %0
 echo
 
 # ── Phase 1.4: set-option / set-window-option / set-environment の -g/-s ──
@@ -192,6 +202,13 @@ echo
 echo "[kill-session prefix matching]"
 assert_denied "kill-session -t foo → mismatch" "プレフィックス不一致" kill-session -t foo
 assert_allowed_to_fake "kill-session -t vbx-x → 許可" kill-session -t vbx-x
+echo
+
+# ── kill-session 別名 ks（H-1 修正） ──
+echo "[kill-session alias ks]"
+assert_denied "ks -t foo → mismatch（別名でもプレフィックスチェックが効く）" "プレフィックス不一致" ks -t foo
+assert_denied "ks -a → blanket" "全セッション削除" ks -a
+assert_allowed_to_fake "ks -t vbx-x → 許可" ks -t vbx-x
 echo
 
 # ── Phase 2.5: VIBEMUX_AI_SESSION_PREFIX カスタム ──
@@ -340,6 +357,38 @@ if [ "$diff_lines" -eq 2 ]; then
   pass "$desc"
 else
   fail "$desc (2 行追加されるべきが ${diff_lines} 行追加された)"
+fi
+echo
+
+# ── M-3 修正: ログのパーミッション ──
+echo "[log file permissions]"
+desc="ログディレクトリのパーミッションが 700"
+log_dir=$(dirname "$LOG_PATH")
+mode=$(stat -f '%Lp' "$log_dir" 2>/dev/null || stat -c '%a' "$log_dir" 2>/dev/null)
+if [ "$mode" = "700" ]; then
+  pass "$desc"
+else
+  fail "$desc (実際: $mode)"
+fi
+
+desc="ログファイルのパーミッションが 600"
+mode=$(stat -f '%Lp' "$LOG_PATH" 2>/dev/null || stat -c '%a' "$LOG_PATH" 2>/dev/null)
+if [ "$mode" = "600" ]; then
+  pass "$desc"
+else
+  fail "$desc (実際: $mode)"
+fi
+echo
+
+# ── H-2 修正: ORIG_COMMAND の引数境界保持 ──
+echo "[command field preserves argument boundaries]"
+desc="空白を含むセッション名が %q クォートで保持される"
+PATH="$(dirname "$SHIM"):${TMP_BIN_DIR}:${PATH}" "$SHIM" kill-session -t 'foo bar' >/dev/null 2>&1 || true
+last_line=$(tail -1 "$LOG_PATH")
+if echo "$last_line" | grep -qE "command=tmux kill-session -t (foo\\\\ bar|'foo bar')"; then
+  pass "$desc"
+else
+  fail "$desc (実際の最終行: $last_line)"
 fi
 echo
 
