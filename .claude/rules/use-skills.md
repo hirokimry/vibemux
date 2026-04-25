@@ -1,4 +1,4 @@
-定義済みのスキル（`/ship`, `/ship-parallel`, `/review-loop`, `/commit` 等）がある操作は、手動でステップを再現せず必ずスキルを使うこと。
+定義済みのスキル（`/vibecorp:ship`, `/vibecorp:ship-parallel`, `/vibecorp:review-loop`, `/vibecorp:commit` 等）がある操作は、手動でステップを再現せず必ずスキルを使うこと。
 
 - Agent ツールで子エージェントに作業を委譲する場合も、子エージェントにスキルの使用を指示する
 - スキルのステップを部分的に手動実行しない（レビューループやマージ待ちが欠落する原因になる）

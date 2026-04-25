@@ -1,8 +1,8 @@
 # vibecorp.lock — 自動生成、手動編集禁止
-version: 0.19.2
-installed_at: 2026-04-23T14:05:55+00:00
+version: 0.21.3
+installed_at: 2026-04-25T12:51:50+00:00
 preset: full
-vibecorp_commit: b1ba324
+vibecorp_commit: 39eac40
 files:
   hooks:
     - block-api-bypass.sh
@@ -14,6 +14,33 @@ files:
     - role-gate.sh
     - sync-gate.sh
   skills:
+    - approve-audit
+    - audit-cost
+    - audit-security
+    - autopilot
+    - branch
+    - commit
+    - context7
+    - diagnose
+    - harvest-all
+    - issue
+    - knowledge-pr
+    - plan-review-loop
+    - plan
+    - pr-review-fix
+    - pr-review-loop
+    - pr
+    - review-harvest
+    - review-loop
+    - review
+    - session-harvest
+    - ship-parallel
+    - ship
+    - spike-loop
+    - sync-check
+    - sync-edit
+    - worktree
+  plugin_skills:
     - approve-audit
     - audit-cost
     - audit-security
@@ -68,31 +95,57 @@ files:
     - use-skills.md
   issue_templates: []
   docs: []
-  knowledge:
-    - cpo/decisions-index.md
-    - cto/decisions-index.md
+  knowledge: []
   base_hashes:
     .gitignore: 574f473b38b319d475f25a21253dca92801289ec5be6c78eff45ca6023b8496d
+    CLAUDE.md: 99ca47dae3c481012363f6578a2cf07afbfbea6bb46f6ebe467ef71dd334d25f
+    MVV.md: e98d9cd2858339652350ce4f2c527ad674a870ffcba57f6cca8935206f8930b9
     bin/activate.sh: b27b3a159aa8dfde407cd91cd3abe9c7602d274ea3abc9fde4529121c636b696
     bin/claude: 07315416982335f11cedce5ae8fb27ca1c3eb836329d21707df92bf22095631c
     bin/vibecorp-sandbox: 1d558099d2a82eaf1d119201db9e0a8b2c1f106dabb8fe5cd1d964d024ddc455
     hooks/block-api-bypass.sh: 87ab95cc06be8a3b189efa11d779233870afd6fb9d11c1e0d36f69ffe0e00e91
     hooks/command-log.sh: 2ffd0d702c91fb8114591555d3bccb32ec84d9609723c7282b4d8215851a174d
-    hooks/diagnose-guard.sh: 0284eb7b2b7ddea8ecafed1fe997462f3310cd1921cdbae6533a8402d13ff59a
-    hooks/protect-branch.sh: a88ae336afb8aba654952dac5021f213110c9c272803aae0098458dcb4798b06
+    hooks/diagnose-guard.sh: a5e4b6e142a84738757f308dbef8f66e3a9d0525751527705c75923f69f9b734
+    hooks/protect-branch.sh: 1b9cbccf72ef4822810a64e279981ae7b522dc2a0c180e57b90e3ed612a57147
     hooks/protect-files.sh: 037456f1eada4d3e466e77ca0ae9402afedfa549cf9b59826ee941166da68a87
-    hooks/review-gate.sh: 0bce7f81b024030034d916e89b067d2d879c6d6e380f17e01d3816fade2f5352
+    hooks/review-gate.sh: 0e67b46e271430f1bfc4a122928d474731bbbd13f00d71e6b3274c3cd18cfdb6
     hooks/role-gate.sh: 8c68eb8a84d88b7cd768c78ab1a2976f252fddaf49ff4b2a37acd828be8f7f06
-    hooks/sync-gate.sh: 6228603e3102a6aa99df4a5d3a468715b1511442f9eee973d432635aa97de5a3
+    hooks/sync-gate.sh: 14aff0bb0654c7141c417b8d3f8d74c9f87a2a3574d2132af5fa57f7e801dc48
     hooks/team-auto-approve.sh: e9684eebebac752e71b0b54370ec15d725a5794c28caa775554537565e8323d4
-    rules/autonomous-restrictions.md: 0bf2186620eb421dcc002018b2afbb43198b78d98e18a6bebab2ce43553890b7
+    plugin_skills/approve-audit/SKILL.md: 0be70c6835190adc4906c3ddc31600529278391e0254b6a78a05a295becd5d56
+    plugin_skills/audit-cost/SKILL.md: 558e506da2159548c1684705f0b024aabbad33a22deace4ae638434c5ff0e239
+    plugin_skills/audit-security/SKILL.md: f884a8aa4dec5fb8f83ff9743f7fbe43e223cda9fc5b84f46259a76bee87ff41
+    plugin_skills/autopilot/SKILL.md: ca60aa35d591973c06c40412bddcee711c76190f3693a9e78edd21660597005c
+    plugin_skills/branch/SKILL.md: 6fbf6a752486bb6ca997d9209292cc823016cabbb9522f0a36f5c60fa0f19343
+    plugin_skills/commit/SKILL.md: fbd96e231fac1248ce7438faf2eef0fd1140f835e187756f81303e9b32e381a0
+    plugin_skills/context7/SKILL.md: 2a1f221590d42255419891dc8cbd6bc43e63d08bce0d4644ad303af0768a0df6
+    plugin_skills/diagnose/SKILL.md: 8e63211586184d85a74eefff5af11535c5d2a9beaf58bbc118937c036cfdbf89
+    plugin_skills/harvest-all/SKILL.md: 3a17eb69e470ad5e152bad532311e818a6d103671b474202dbbf291257c9d4e0
+    plugin_skills/issue/SKILL.md: f691b9ab9c732c084bdf66b3c7168763c89f364366a3d483020cf096154bed43
+    plugin_skills/knowledge-pr/SKILL.md: e00d97f716cde4807b61103dc3c5287da79d24e24acf2f4e9c643315fb8788f7
+    plugin_skills/plan-review-loop/SKILL.md: 83f56aeb4ae050a0583abbcd7e0abc79c6af7ca8eec92d8587c9c5abe6eff6bd
+    plugin_skills/plan/SKILL.md: 508d14d35e5cd2248a2781ff7b2476b80e71dd185b6fdd77143f678bcc2d990e
+    plugin_skills/pr-review-fix/SKILL.md: 5b66707604246aba24d211794a4825b816aeb4d608d24bbb94b6e26389707374
+    plugin_skills/pr-review-loop/SKILL.md: 697d91f2004ca64e96bc253ac1976fb2a58877c085fa35303458b78a028eb803
+    plugin_skills/pr/SKILL.md: 36c73d73bc55d95a23a0672a0abe69f41571b3ce0dd44ddad861195d2c2c95ed
+    plugin_skills/review-harvest/SKILL.md: 01d2595598a5b6fc26faaa57ab5d7eb496ddb1fbfe07e87536b85cff97c1fe4b
+    plugin_skills/review-loop/SKILL.md: 4e2960a13595c42344d2ff080a10ae302b7d2f091c2c9427532da47821fcbd71
+    plugin_skills/review/SKILL.md: e8621a1ab67fd4a74dbd2f1470ff7621f7352171fbaf3c7ce8e1738c5283020e
+    plugin_skills/session-harvest/SKILL.md: 6902cafb66386663c297062e96b3e268fbd05852bf50840cb0796b3327ef3ad8
+    plugin_skills/ship-parallel/SKILL.md: 15e8ce2cbe9c147b888f056d7c31fd1582cf2ae41be945d003e825e231e215d5
+    plugin_skills/ship/SKILL.md: 83ff92f123ba0f0f81994dfc8c27c36eb9bc7b2d1ab2adc636f7fc6bf989f950
+    plugin_skills/spike-loop/SKILL.md: e57bd9c0121749f0f6d54578c21440adf2802f35c310ce2526f210737c1f8226
+    plugin_skills/sync-check/SKILL.md: 21c13479d4efd9abb9478ee30a314dd6b882c8d796d047399e520914f87b19b4
+    plugin_skills/sync-edit/SKILL.md: 634c500cf125c67032203cff585c184a62c77611e2dd44793318ae01de17d0ef
+    plugin_skills/worktree/SKILL.md: aa90a7393f478fbddf5c88c6449fc04178738ae322c64e71c36375be721302cc
+    rules/autonomous-restrictions.md: 0b3033e4ac00e54689906b5408eb036fd55403f15efd12ae58e805a840c3be11
     rules/comments.md: a8bdaf0c489fcef2981336563418d1c077aa54d19390a2a287abe61f87fa049a
     rules/markdown.md: b8699881fd9ceac44f7ed966ebd992f6014fe290290bd2a6bbae45a6efcf0c1c
     rules/mvv.md: 5818a1129d7ecf373b91e4437f982def9a1d850dbfd566285e8c2c9f34c14033
     rules/review-criteria.md: 6822820bc5a263294f13fd49875e7a709057560f9db5d6728b525d6e8cea3660
     rules/shell.md: 94d11ee8eeedc9978f18f73b31e32d6f387af85fe421b92b95878a91709f7baf
     rules/testing.md: 2e44f995e2df6b5dd2d5e844045ed79e1912676598b6cc34ad705d2f760a09ed
-    rules/use-skills.md: e3cb069dd6925fb0089dff86a94a443dea2cf76e16bfb39000eb8df26a453a48
+    rules/use-skills.md: 314403471b272d3cf83828031d673ba9bc3a26daa0943e20e8ff94713da655cc
     sandbox/claude.sb: 36be01e89de84d93b99ff28b00a9daf8410d4e499832080e634c540d0d685978
     skills/approve-audit/SKILL.md: 6aec41571352a0066ee80ba10b4270dd92e95c8716216fe6fe3adbaf66e9c899
     skills/audit-cost/SKILL.md: 5ea88c61b8cd3ec6b002670b28ffc11fef30aa114c4b3732b566d83a1d580549
