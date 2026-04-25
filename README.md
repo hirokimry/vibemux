@@ -24,10 +24,13 @@ AI 駆動開発では、shell でエージェントに指示を出し、lazygit 
 
 ```bash
 git clone https://github.com/hirokimry/vibemux.git
-ln -s "$(pwd)/vibemux/vibemux" ~/.local/bin/vibemux
+cd vibemux
+make install
 ```
 
-または `vibemux` スクリプトを `$PATH` の通った場所にコピーするだけでも OK です。
+`make install` は `~/.local/bin/vibemux` に絶対パスでシンボリックリンクを作成します。`~/.local/bin` が `$PATH` に含まれない場合は、追加方法を案内します。
+
+`make` を使いたくない場合は、`vibemux` スクリプトを `$PATH` の通った場所に直接コピーしても動きます。
 
 ## 使い方
 

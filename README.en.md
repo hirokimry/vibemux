@@ -24,10 +24,13 @@ In AI-driven development, you instruct an agent in the shell and verify changes 
 
 ```bash
 git clone https://github.com/hirokimry/vibemux.git
-ln -s "$(pwd)/vibemux/vibemux" ~/.local/bin/vibemux
+cd vibemux
+make install
 ```
 
-Or just copy the `vibemux` script anywhere on your `$PATH`.
+`make install` creates an absolute-path symlink at `~/.local/bin/vibemux`. If `~/.local/bin` is not on your `$PATH`, the command prints instructions for adding it.
+
+Prefer not to use `make`? Just copy the `vibemux` script anywhere on your `$PATH`.
 
 ## Quick Start
 
