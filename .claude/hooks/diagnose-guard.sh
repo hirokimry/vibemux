@@ -1,5 +1,5 @@
 #!/bin/bash
-# diagnose-guard.sh — /diagnose 実行中に保護ファイルへの編集をブロックするフック
+# diagnose-guard.sh — /vibecorp:diagnose 実行中に保護ファイルへの編集をブロックするフック
 # diagnose-active スタンプ存在時に hooks/*.sh, vibecorp.yml, MVV.md, diagnose-guard.sh への変更を deny
 
 set -euo pipefail
@@ -56,7 +56,7 @@ if echo "$FILE_PATH" | grep -q 'diagnose-guard\.sh$'; then
     "hookSpecificOutput": {
       "hookEventName": "PreToolUse",
       "permissionDecision": "deny",
-      "permissionDecisionReason": "/diagnose 実行中は diagnose-guard.sh を変更できません。自己制約の緩和は禁止されています。"
+      "permissionDecisionReason": "/vibecorp:diagnose 実行中は diagnose-guard.sh を変更できません。自己制約の緩和は禁止されています。"
     }
   }'
   exit 0
@@ -75,7 +75,7 @@ while IFS= read -r pattern; do
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "permissionDecision": "deny",
-          "permissionDecisionReason": ("/diagnose 実行中は " + $pattern + " に一致するファイルを変更できません。暴走防止のため保護されています。")
+          "permissionDecisionReason": ("/vibecorp:diagnose 実行中は " + $pattern + " に一致するファイルを変更できません。暴走防止のため保護されています。")
         }
       }'
       exit 0
@@ -87,7 +87,7 @@ while IFS= read -r pattern; do
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "permissionDecision": "deny",
-          "permissionDecisionReason": ("/diagnose 実行中は " + $pattern + " を変更できません。暴走防止のため保護されています。")
+          "permissionDecisionReason": ("/vibecorp:diagnose 実行中は " + $pattern + " を変更できません。暴走防止のため保護されています。")
         }
       }'
       exit 0

@@ -1,5 +1,5 @@
 #!/bin/bash
-# review-gate.sh — gh pr create 前に /review または /review-loop の実行を強制するフック
+# review-gate.sh — gh pr create 前に /vibecorp:review または /vibecorp:review-loop の実行を強制するフック
 # レビュー完了スタンプがあれば PR 作成を許可
 
 set -euo pipefail
@@ -52,7 +52,7 @@ jq -n '{
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "PR作成前に /review-loop または /review を実行してください。コードレビューが未完了です。"
+    "permissionDecisionReason": "PR作成前に /vibecorp:review-loop または /vibecorp:review を実行してください。コードレビューが未完了です。"
   }
 }'
 exit 0

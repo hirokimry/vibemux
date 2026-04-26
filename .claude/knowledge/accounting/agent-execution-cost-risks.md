@@ -37,10 +37,13 @@ vibecorp 本家での修正完了まで、自律実行ループ（`/autopilot`�
 
 ### 内容
 
-`.claude/` 配下のファイル（フック・スキル・エージェント定義含む）は
+`.claude/` 配下のファイル（フック・エージェント定義含む）は
 `vibecorp install.sh --update` による自動生成物として管理されている。
 ローカルで加えたコスト制御の修正（レート制限、上限設定等）は、
 次回 `install.sh --update` 実行時に**無音で上書きされる**。
+
+スキルは `~/.claude/plugins/cache/vibecorp/` 配下のプラグインキャッシュから配布される方式に移行済みであり、
+`.claude/skills/` はプロジェクトに存在しない。スキルのコスト制御変更も vibecorp upstream への反映が必要。
 
 ### コスト影響
 
@@ -60,8 +63,9 @@ vibecorp 本家での修正完了まで、自律実行ループ（`/autopilot`�
 
 ### 内容
 
-`.claude/skills/session-harvest/SKILL.md` は tmux セッションのサマリ生成に LLM を利用する。
-このスキルも vibecorp 管理の自動生成ファイル。
+`session-harvest` スキルは tmux セッションのサマリ生成に LLM を利用する。
+スキルは `~/.claude/plugins/cache/vibecorp/` 配下のプラグインキャッシュから配布されており、
+`.claude/skills/` にローカルファイルは存在しない。
 
 ### コスト影響
 

@@ -4,7 +4,7 @@
 #
 # 既知制限: Bash ツールは tool_input.command に対象ファイルパスを含まないため、
 # worktree 判定不能 → cwd 基準で判定される。teammate が worktree 内で素の git commit を
-# 直叩きすると main repo の cwd を見て deny される。`/commit` スキル経由で
+# 直叩きすると main repo の cwd を見て deny される。`/vibecorp:commit` スキル経由で
 # `cd <worktree> && git commit` 形式で呼ぶこと。詳細は docs/known-limitations.md を参照。
 
 set -euo pipefail

@@ -1,4 +1,22 @@
 {
+  "permissions": {
+    "allow": [
+      "Edit(.claude/knowledge/**)",
+      "Edit(.claude/plans/**)",
+      "Edit(.claude/rules/**)",
+      "Edit(//Users/**/.cache/vibecorp/plans/**)",
+      "Edit(//Users/**/.cache/vibecorp/state/**)",
+      "Edit(//home/**/.cache/vibecorp/plans/**)",
+      "Edit(//home/**/.cache/vibecorp/state/**)",
+      "Write(.claude/knowledge/**)",
+      "Write(.claude/plans/**)",
+      "Write(.claude/rules/**)",
+      "Write(//Users/**/.cache/vibecorp/plans/**)",
+      "Write(//Users/**/.cache/vibecorp/state/**)",
+      "Write(//home/**/.cache/vibecorp/plans/**)",
+      "Write(//home/**/.cache/vibecorp/state/**)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -48,5 +66,16 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "vibecorp@vibecorp": true
+  },
+  "extraKnownMarketplaces": {
+    "vibecorp": {
+      "source": {
+        "source": "github",
+        "repo": "hirokimry/vibecorp"
+      }
+    }
   }
 }

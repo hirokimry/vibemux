@@ -1,5 +1,5 @@
 #!/bin/bash
-# sync-gate.sh — git push 前に /sync-check の実行を強制するフック
+# sync-gate.sh — git push 前に /vibecorp:sync-check の実行を強制するフック
 # sync-check がOK判定を出したスタンプがあればpush許可
 
 set -euo pipefail
@@ -39,7 +39,7 @@ jq -n '{
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "push前に /sync-check を実行してください。docs/ と knowledge/ の整合性確認が必要です。"
+    "permissionDecisionReason": "push前に /vibecorp:sync-check を実行してください。docs/ と knowledge/ の整合性確認が必要です。"
   }
 }'
 exit 0

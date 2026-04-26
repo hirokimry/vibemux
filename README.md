@@ -96,6 +96,11 @@ make setup-hooks   # git hooks を有効化
 make check         # lint + tests をローカル実行
 ```
 
+詳細なドキュメント:
+
+- [docs/file-placement.md](docs/file-placement.md) — ファイル配置ポリシー
+- [docs/coderabbit-dependency.md](docs/coderabbit-dependency.md) — スキルの CodeRabbit 依存マップ
+
 ## 必要なもの
 
 - [tmux](https://github.com/tmux/tmux) (>= 3.0)
@@ -126,6 +131,8 @@ vibemux が並列時代に提供するのは以下のみです。
 - ❌ 並列エージェントの管理・集約・命名・終了には関与しない
 
 並列の起動・終了は tmux と git のネイティブ機能（`tmux new-window`、`tmux split-window`、`git worktree add`、`git worktree remove`）に委ねます。
+
+並列実行時の承認フローについては [docs/team-permissions.md](docs/team-permissions.md) を参照してください。
 
 ## ライセンス
 
