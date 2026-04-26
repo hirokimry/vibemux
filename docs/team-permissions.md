@@ -4,7 +4,7 @@
 
 Agent Teams（`/vibecorp:ship-parallel` 等）でチームメイトを起動すると、Claude Code の既知バグ（[anthropics/claude-code#26479](https://github.com/anthropics/claude-code/issues/26479)）により `settings.local.json` の allow リストがチームメイトに継承されず、パーミッション確認が team lead に大量に飛ぶ。
 
-vibecorp は **承認フローに介入しない** 方針を取る。詳細は `docs/design-philosophy.md` の「承認フローへの非介入」を参照。このドキュメントは、チームモードでの承認負荷をどう下げるかの実用ガイドである。
+vibecorp は **承認フローに介入しない** 方針を取る（詳細は後述「vibecorp のスタンス」セクションを参照）。このドキュメントは、チームモードでの承認負荷をどう下げるかの実用ガイドである。
 
 ## vibecorp のスタンス
 

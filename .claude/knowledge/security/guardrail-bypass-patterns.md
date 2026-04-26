@@ -47,14 +47,15 @@ vibecorp リポジトリ Issue として追跡。本リポジトリでの修正�
 
 ---
 
-## 3. CISOエージェント — Write ツール権限の欠落
+## 3. CISOエージェント — Write ツール権限の欠落 ~~（解消済み）~~
 
 **発見**: PR #43 レビュー指摘（CodeRabbit 確認済み）
+**解消**: `settings.json` の `permissions.allow` に `"Write(.claude/knowledge/**)"` を追加（dev/70_vibecorp_upgrade）
 
-### 問題
+### 問題（解消済み）
 
 `.claude/agents/ciso.md`（自動生成）に Write ツール権限が含まれておらず、
-CISO エージェントが `.claude/knowledge/` 等へ判断記録を書き込めない状態になっている。
+CISO エージェントが `.claude/knowledge/` 等へ判断記録を書き込めない状態になっていた。
 
 ### 影響
 
@@ -63,8 +64,8 @@ CISO エージェントが `.claude/knowledge/` 等へ判断記録を書き込�
 
 ### 対策方針
 
-vibecorp プラグインのエージェント定義テンプレート（`ciso.md`）に
-Write ツール権限を追加する。upstream 修正が優先。
+`settings.json` の `permissions.allow` に `"Write(.claude/knowledge/**)"` を追加することで解消。
+エージェント定義テンプレート側の修正は不要となった。
 
 ---
 

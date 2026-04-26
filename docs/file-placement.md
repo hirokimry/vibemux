@@ -9,7 +9,6 @@ vibecorp を導入したリポジトリにおける、各ディレクトリの�
 ├── MVV.md                      ← 方針層: 最上位方針
 ├── docs/                       ← 設計層: 公式ポリシー・仕様（Source of Truth）
 ├── knowledge/                  ← 設計層: 外部発信用ナレッジ（記事素材等）
-├── skills/                     ← 実行層: ワークフロー定義（/vibecorp:xxx）
 ├── .claude/
 │   ├── CLAUDE.md               ← プロジェクト指示
 │   ├── agents/                 ← 実行層: エージェント宣言（who does what）
@@ -21,7 +20,9 @@ vibecorp を導入したリポジトリにおける、各ディレクトリの�
 │   ├── rules/                  ← 実行層: コーディング規約
 │   ├── vibecorp.yml            ← プロジェクト設定
 │   ├── vibecorp.lock           ← マニフェスト
-│   └── settings.json           ← フック設定
+│   └── settings.json           ← フック設定・プラグイン設定
+├── .claude-plugin/
+│   └── plugin.json             ← プラグインメタデータ
 ├── tests/                      ← テスト
 └── (プロジェクト固有のコード)
 ```
@@ -32,7 +33,7 @@ vibecorp を導入したリポジトリにおける、各ディレクトリの�
 |---|---|---|
 | 方針層 | `MVV.md` | 全判断の最上位基準。ファウンダーのみ編集 |
 | 設計層 | `docs/`, `knowledge/` | 仕様・ポリシーの Source of Truth |
-| 実行層 | `.claude/`, `skills/` | エージェント・スキル・フック・ルールの定義 |
+| 実行層 | `.claude/` | エージェント・フック・ルールの定義 |
 
 ## 各ディレクトリの役割と配置基準
 
@@ -118,22 +119,7 @@ vibecorp を導入したリポジトリにおける、各ディレクトリの�
 **置かないもの:**
 
 - 判断ロジックの詳細 → `.claude/knowledge/{role}/` へ
-- ワークフロー定義 → `skills/`（Plugin ルート）へ
-
-### `skills/` — ワークフロー定義（Plugin 名前空間）
-
-Claude Code の `/vibecorp:xxx` として実行されるスキル。1スキル1ディレクトリ。Plugin ルート直下に配置する。
-
-**置くもの:**
-
-- `SKILL.md`（ワークフロー定義・実行フロー・条件分岐）
-- 複数エージェントのオーケストレーション
-- 出力フォーマットの定義
-
-**置かないもの:**
-
-- エージェントの判断ロジック → `.claude/agents/`, `.claude/knowledge/` へ
-- 機械的なゲート制御 → `.claude/hooks/` へ
+- ワークフロー定義 → プラグインキャッシュ（`~/.claude/plugins/cache/vibecorp/`）経由で配布される
 
 ### `.claude/hooks/` — 機械的ゲート
 
@@ -248,7 +234,7 @@ hooks・install.sh 等のシェルスクリプトの自動テスト。
 
 ### 導入先リポジトリの推奨構成
 
-導入先リポジトリでは `templates/` ディレクトリが存在しない。hooks/skills/agents を含む全ファイルが `.claude/` 内の唯一のコピーであるため、**全て追跡するのが正しい**。
+導入先リポジトリでは `templates/` ディレクトリが存在しない。hooks/agents 等を含む全ファイルが `.claude/` 内の唯一のコピーであるため、**全て追跡するのが正しい**。スキルはプラグインキャッシュ（`~/.claude/plugins/cache/vibecorp/`）経由で配布されるため、導入先リポジトリには `skills/` ディレクトリは存在しない。
 
 `install.sh` が `.claude/.gitignore` を自動生成する。実装計画は XDG パス（`~/.cache/vibecorp/plans/<repo-id>/`）に保存されるため、`.claude/plans/` は作成されない。
 
@@ -265,7 +251,6 @@ vibecorp のようにテンプレートソース（`templates/`）を持つリ�
 # .claude/.gitignore（テンプレートソースリポジトリ用）
 # テンプレート管理ファイル（templates/ が source of truth）
 hooks/
-skills/
 agents/
 settings.json
 vibecorp.lock
@@ -286,7 +271,7 @@ vibecorp.lock
 
 ### 独自名前空間
 
-`.claude/vibecorp/` のような独自ディレクトリは作らない。全ファイルを Claude Code の規約パス（`.claude/hooks/`, `.claude/agents/`, `.claude/rules/`）および Plugin ルート（`skills/`）に直接配置する。
+`.claude/vibecorp/` のような独自ディレクトリは作らない。フック・ルール等は Claude Code の規約パス（`.claude/hooks/`, `.claude/agents/`, `.claude/rules/`）に直接配置する。
 
 ### シークレット・認証情報
 

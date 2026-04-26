@@ -17,11 +17,12 @@ docs/（Source of Truth・仕様書群）
   ↓ エージェントが参照・更新する設計情報
 .claude/（実行層）
   ├── agents/    ← Role Agents のみ（判断 + knowledge蓄積する者）
-  ├── skills/    ← ワークフロー定義（内部でAgent起動しモデル/ツール制御）
   ├── hooks/     ← ゲート制御（ファイル保護 + ワークフロー強制）
   ├── knowledge/ ← 役割別の判断基準・判断記録（運用中に蓄積）
   ├── rules/     ← 全エージェント共通のコーディング規約
-  └── settings.json ← フック設定
+  └── settings.json ← フック設定・プラグイン設定
+~/.claude/plugins/cache/vibecorp/（スキルキャッシュ）
+  └── skills/    ← ワークフロー定義（プラグインキャッシュ経由で配布）
 ```
 
 ## agents vs skills の設計原則
@@ -65,18 +66,21 @@ docs/（Source of Truth・仕様書群）
    → Yes → agents/ に定義する
 ```
 
-## プラグイン配布方式: Claude Code 規約パスへの直接配置
+## プラグイン配布方式: プラグインキャッシュ経由の配布
+
+スキルは `~/.claude/plugins/cache/vibecorp/` に配置されたプラグインキャッシュから配布される。導入先リポジトリには `plugin.json` を持つ `.claude-plugin/` ディレクトリを配置し、`settings.json` で `enabledPlugins` / `extraKnownMarketplaces` を設定することでスキルを利用可能にする。
 
 ```text
 導入先リポジトリ:
 ├── .claude/
 │   ├── hooks/           ← フック（ファイル保護等）
-│   ├── skills/          ← スキル（Claude Code の /コマンド）
 │   ├── rules/           ← コーディング規約
 │   ├── vibecorp.yml     ← プロジェクト設定
 │   ├── vibecorp.lock    ← バージョン固定 + マニフェスト
-│   ├── settings.json    ← フック設定（マージ管理）
+│   ├── settings.json    ← フック設定・プラグイン設定（マージ管理）
 │   └── CLAUDE.md        ← プロジェクト指示
+├── .claude-plugin/
+│   └── plugin.json      ← プラグインメタデータ
 ├── .github/
 │   └── workflows/
 │       └── test.yml     ← CI ワークフロー
@@ -86,17 +90,20 @@ docs/（Source of Truth・仕様書群）
 
 設計上の重要な判断:
 
+- **スキルはプラグインキャッシュから配布する**
+  スキルを `.claude/skills/` に直接配置する方式から、プラグインキャッシュ（`~/.claude/plugins/cache/vibecorp/`）経由の配布方式に移行した。これにより導入先リポジトリの `.claude/` にスキルファイルが存在しなくなる。`settings.json` の `enabledPlugins` / `extraKnownMarketplaces` でプラグインを有効化する
+
 - **独自名前空間を持たない**
-  `.claude/vibecorp/` のような独自ディレクトリは作らない。全ファイルを Claude Code の規約パス（`.claude/hooks/`, `.claude/skills/`, `.claude/rules/`）に直接配置する。Claude Code が認識しないパスにファイルを置くことは、プラグインとして意味がない
+  `.claude/vibecorp/` のような独自ディレクトリは作らない。フック・ルール等は Claude Code の規約パス（`.claude/hooks/`, `.claude/rules/`）に直接配置する。Claude Code が認識しないパスにファイルを置くことは、プラグインとして意味がない
 
 - **lock をマニフェストとして使う**
   `vibecorp.lock` に vibecorp が管理するファイルの一覧を記録する。lock に載っている = vibecorp 管理、載っていない = ユーザー作成。更新時は lock を参照して vibecorp 管理ファイルのみ差し替える
 
 - **.gitignore の判断はユーザーに委ねる**
-  vibecorp は `.gitignore` を操作しない。`.claude` を gitignore するか git 管理するかは導入先プロジェクトの判断。生成物を一括 gitignore する案（node_modules パターン）は却下した。vibecorp の生成物は rules, skills, CLAUDE.md 等のチームがレビュー・カスタマイズする人間可読な設定であり、node_modules のような第三者コードとは性質が異なる。PR でのレビューを可能にするため、git 管理を推奨する
+  vibecorp は `.gitignore` を操作しない。`.claude` を gitignore するか git 管理するかは導入先プロジェクトの判断。生成物を一括 gitignore する案（node_modules パターン）は却下した。vibecorp の生成物は rules, hooks, CLAUDE.md 等のチームがレビュー・カスタマイズする人間可読な設定であり、node_modules のような第三者コードとは性質が異なる。PR でのレビューを可能にするため、git 管理を推奨する
 
 - **settings.json はマージ管理**
-  vibecorp 由来フック（パスに `.claude/hooks/` を含む）のみ操作し、ユーザー独自フックは保持
+  vibecorp 由来フック（パスに `.claude/hooks/` を含む）および `enabledPlugins` / `extraKnownMarketplaces` セクションのみ操作し、ユーザー独自の設定は保持する
 
 - **Public 前提**
   vibecorp リポジトリ自体はテンプレートのみで実データを含まない公開前提の設計
