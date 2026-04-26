@@ -4,7 +4,7 @@
 
 ## 概要
 
-[delta](https://github.com/dandavella/delta) は Rust 製の diff ビューアで、`git diff` や lazygit の diff 表示にシンタックスハイライトや行番号を追加できる。vibemux のワークスペース内で lazygit を使う際に、diff の視認性を向上させたい場合に設定するとよい。
+[delta](https://github.com/dandavison/delta) は Rust 製の diff ビューアで、`git diff` や lazygit の diff 表示にシンタックスハイライトや行番号を追加できる。vibemux のワークスペース内で lazygit を使う際に、diff の視認性を向上させたい場合に設定するとよい。
 
 ## 1. delta のインストール
 
