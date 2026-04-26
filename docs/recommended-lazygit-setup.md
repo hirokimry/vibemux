@@ -44,7 +44,7 @@ delta --version
 
 | オプション | 説明 |
 |---|---|
-| `navigate` | `n` / `N` キーで diff のファイル間を移動できるようになる |
+| `navigate` | `git diff` 単体では `n`/`N` でファイル間移動が可能。lazygit 内では動作しない（lazygit がキーボード入力を pager に転送しないため） |
 | `line-numbers` | diff に行番号を表示する |
 | `syntax-theme` | シンタックスハイライトのテーマ（`delta --list-syntax-themes` で一覧を確認できる） |
 
@@ -74,9 +74,9 @@ lazygit --print-config-dir
 
 ```yaml
 git:
-  paging:
-    colorArg: always
-    pager: delta --dark --paging=never
+  pagers:
+    - colorArg: always
+      pager: delta --dark --paging=never
 ```
 
 ### `--paging=never` について
@@ -108,14 +108,14 @@ delta の設定を解除して元の状態に戻すには、以下の手順を�
 
 ### lazygit の pager 設定を削除
 
-`config.yml` から `git.paging` セクションを削除する。
+`config.yml` から `git.pagers` セクションを削除する。
 
 ```yaml
 # 以下を削除
 git:
-  paging:
-    colorArg: always
-    pager: delta --dark --paging=never
+  pagers:
+    - colorArg: always
+      pager: delta --dark --paging=never
 ```
 
 ### delta のアンインストール（任意）
