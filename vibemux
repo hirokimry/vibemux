@@ -57,8 +57,9 @@ resolve_focus_pane() {
 
 check_command() {
   local label="$1" cmd="$2"
-  local bin="${cmd%% *}"
-  [[ -z "$bin" ]] && return 0
+  local bin
+  read -r bin _ <<< "$cmd"
+  [[ -z "${bin:-}" ]] && return 0
   command -v "$bin" >/dev/null 2>&1 || die "command not found: $bin (set by $label)"
 }
 
