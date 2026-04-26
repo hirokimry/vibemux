@@ -162,6 +162,62 @@ else
 fi
 echo
 
+# ── Pane Command Check ───────────────────────────────────────
+echo "[pane command check]"
+
+desc="new with missing left pane command exits 1"
+actual=0
+(unset TMUX; VIBEMUX_PANE_LEFT=nonexistent_cmd_xyz "$VIBEMUX" new testsession) >/dev/null 2>&1 || actual=$?
+if [[ "$actual" -eq 1 ]]; then
+  echo "  PASS: $desc"
+  ((passed++))
+else
+  echo "  FAIL: $desc (expected exit 1, got $actual)"
+  ((failed++))
+fi
+
+desc="new with missing left pane command shows error"
+output=$(unset TMUX; VIBEMUX_PANE_LEFT=nonexistent_cmd_xyz "$VIBEMUX" new testsession 2>&1) || true
+if echo "$output" | grep -q "set by VIBEMUX_PANE_LEFT"; then
+  echo "  PASS: $desc"
+  ((passed++))
+else
+  echo "  FAIL: $desc (expected 'set by VIBEMUX_PANE_LEFT' in output)"
+  ((failed++))
+fi
+
+desc="new with empty left pane does not show command not found"
+output=$(unset TMUX; VIBEMUX_PANE_LEFT="" "$VIBEMUX" new testsession 2>&1) || true
+if echo "$output" | grep -q "set by VIBEMUX_PANE"; then
+  echo "  FAIL: $desc (got check_command error for empty pane)"
+  ((failed++))
+else
+  echo "  PASS: $desc"
+  ((passed++))
+fi
+
+desc="new with missing right pane command exits 1"
+actual=0
+(unset TMUX; VIBEMUX_PANE_LEFT=bash VIBEMUX_PANE_RIGHT=nonexistent_cmd_xyz "$VIBEMUX" new testsession) >/dev/null 2>&1 || actual=$?
+if [[ "$actual" -eq 1 ]]; then
+  echo "  PASS: $desc"
+  ((passed++))
+else
+  echo "  FAIL: $desc (expected exit 1, got $actual)"
+  ((failed++))
+fi
+
+desc="new with missing right pane command shows error"
+output=$(unset TMUX; VIBEMUX_PANE_LEFT=bash VIBEMUX_PANE_RIGHT=nonexistent_cmd_xyz "$VIBEMUX" new testsession 2>&1) || true
+if echo "$output" | grep -q "set by VIBEMUX_PANE_RIGHT"; then
+  echo "  PASS: $desc"
+  ((passed++))
+else
+  echo "  FAIL: $desc (expected 'set by VIBEMUX_PANE_RIGHT' in output)"
+  ((failed++))
+fi
+echo
+
 # ── Unknown Subcommand ───────────────────────────────────────
 echo "[unknown subcommand]"
 assert_exit "unknown subcommand exits 0 (shows usage)" 0 "$VIBEMUX" unknowncmd

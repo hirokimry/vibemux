@@ -100,6 +100,7 @@ make check         # Run lint + tests locally
 
 - [tmux](https://github.com/tmux/tmux) (>= 3.0)
 - Bash (>= 4.0)
+- [lazygit](https://github.com/jesseduffield/lazygit) (for default setup; changeable via `VIBEMUX_PANE_LEFT`)
 
 ## License
 
