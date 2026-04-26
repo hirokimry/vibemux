@@ -4,7 +4,7 @@ set -euo pipefail
 VERSION="0.1.0"
 
 # ── Configuration ──────────────────────────────────────────────
-VIBEMUX_PANE_LEFT="${VIBEMUX_PANE_LEFT:-lazygit}"
+VIBEMUX_PANE_LEFT="${VIBEMUX_PANE_LEFT-lazygit}"
 VIBEMUX_PANE_RIGHT="${VIBEMUX_PANE_RIGHT:-}"
 VIBEMUX_RIGHT_RATIO="${VIBEMUX_RIGHT_RATIO:-70}"
 VIBEMUX_FOCUS="${VIBEMUX_FOCUS:-right}"
