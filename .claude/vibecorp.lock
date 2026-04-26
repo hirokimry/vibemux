@@ -1,8 +1,8 @@
 # vibecorp.lock — 自動生成、手動編集禁止
-version: 0.22.0
-installed_at: 2026-04-26T00:20:13+00:00
+version: 0.22.2
+installed_at: 2026-04-26T09:41:19+00:00
 preset: full
-vibecorp_commit: 0e3e96e
+vibecorp_commit: d519347
 files:
   hooks:
     - block-api-bypass.sh
@@ -14,32 +14,6 @@ files:
     - role-gate.sh
     - sync-gate.sh
   skills: []
-  plugin_skills:
-    - approve-audit
-    - audit-cost
-    - audit-security
-    - autopilot
-    - branch
-    - commit
-    - context7
-    - diagnose
-    - harvest-all
-    - issue
-    - knowledge-pr
-    - plan-review-loop
-    - plan
-    - pr-review-fix
-    - pr-review-loop
-    - pr
-    - review-harvest
-    - review-loop
-    - review
-    - session-harvest
-    - ship-parallel
-    - ship
-    - sync-check
-    - sync-edit
-    - worktree
   agents:
     - accounting-analyst.md
     - cfo.md
@@ -67,10 +41,7 @@ files:
     - testing.md
     - use-skills.md
   issue_templates: []
-  docs:
-    - coderabbit-dependency.md
-    - file-placement.md
-    - team-permissions.md
+  docs: []
   knowledge: []
   base_hashes:
     .gitignore: 574f473b38b319d475f25a21253dca92801289ec5be6c78eff45ca6023b8496d
