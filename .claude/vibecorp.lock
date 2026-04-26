@@ -1,8 +1,8 @@
 # vibecorp.lock — 自動生成、手動編集禁止
-version: 0.21.3
-installed_at: 2026-04-25T12:51:50+00:00
+version: 0.22.0
+installed_at: 2026-04-26T00:20:13+00:00
 preset: full
-vibecorp_commit: 39eac40
+vibecorp_commit: 0e3e96e
 files:
   hooks:
     - block-api-bypass.sh
@@ -13,33 +13,7 @@ files:
     - review-gate.sh
     - role-gate.sh
     - sync-gate.sh
-  skills:
-    - approve-audit
-    - audit-cost
-    - audit-security
-    - autopilot
-    - branch
-    - commit
-    - context7
-    - diagnose
-    - harvest-all
-    - issue
-    - knowledge-pr
-    - plan-review-loop
-    - plan
-    - pr-review-fix
-    - pr-review-loop
-    - pr
-    - review-harvest
-    - review-loop
-    - review
-    - session-harvest
-    - ship-parallel
-    - ship
-    - spike-loop
-    - sync-check
-    - sync-edit
-    - worktree
+  skills: []
   plugin_skills:
     - approve-audit
     - audit-cost
@@ -63,7 +37,6 @@ files:
     - session-harvest
     - ship-parallel
     - ship
-    - spike-loop
     - sync-check
     - sync-edit
     - worktree
@@ -94,7 +67,10 @@ files:
     - testing.md
     - use-skills.md
   issue_templates: []
-  docs: []
+  docs:
+    - coderabbit-dependency.md
+    - file-placement.md
+    - team-permissions.md
   knowledge: []
   base_hashes:
     .gitignore: 574f473b38b319d475f25a21253dca92801289ec5be6c78eff45ca6023b8496d
@@ -119,14 +95,14 @@ files:
     plugin_skills/branch/SKILL.md: 6fbf6a752486bb6ca997d9209292cc823016cabbb9522f0a36f5c60fa0f19343
     plugin_skills/commit/SKILL.md: fbd96e231fac1248ce7438faf2eef0fd1140f835e187756f81303e9b32e381a0
     plugin_skills/context7/SKILL.md: 2a1f221590d42255419891dc8cbd6bc43e63d08bce0d4644ad303af0768a0df6
-    plugin_skills/diagnose/SKILL.md: 8e63211586184d85a74eefff5af11535c5d2a9beaf58bbc118937c036cfdbf89
+    plugin_skills/diagnose/SKILL.md: fedd58b3a811a8eed1474732e2c3e430a055e6c265f6857c4f914eefb6eeeb77
     plugin_skills/harvest-all/SKILL.md: 3a17eb69e470ad5e152bad532311e818a6d103671b474202dbbf291257c9d4e0
     plugin_skills/issue/SKILL.md: f691b9ab9c732c084bdf66b3c7168763c89f364366a3d483020cf096154bed43
     plugin_skills/knowledge-pr/SKILL.md: e00d97f716cde4807b61103dc3c5287da79d24e24acf2f4e9c643315fb8788f7
     plugin_skills/plan-review-loop/SKILL.md: 83f56aeb4ae050a0583abbcd7e0abc79c6af7ca8eec92d8587c9c5abe6eff6bd
     plugin_skills/plan/SKILL.md: 508d14d35e5cd2248a2781ff7b2476b80e71dd185b6fdd77143f678bcc2d990e
     plugin_skills/pr-review-fix/SKILL.md: 5b66707604246aba24d211794a4825b816aeb4d608d24bbb94b6e26389707374
-    plugin_skills/pr-review-loop/SKILL.md: 697d91f2004ca64e96bc253ac1976fb2a58877c085fa35303458b78a028eb803
+    plugin_skills/pr-review-loop/SKILL.md: 99475e39e732fffff099ef38ec6479fc304d42cc7fcf27d8f6a34d5da4377212
     plugin_skills/pr/SKILL.md: 36c73d73bc55d95a23a0672a0abe69f41571b3ce0dd44ddad861195d2c2c95ed
     plugin_skills/review-harvest/SKILL.md: 01d2595598a5b6fc26faaa57ab5d7eb496ddb1fbfe07e87536b85cff97c1fe4b
     plugin_skills/review-loop/SKILL.md: 4e2960a13595c42344d2ff080a10ae302b7d2f091c2c9427532da47821fcbd71

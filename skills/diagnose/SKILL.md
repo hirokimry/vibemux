@@ -42,7 +42,7 @@ awk '/^preset:/ { print $2 }' "$CLAUDE_PROJECT_DIR/.claude/vibecorp.yml"
 
 ### 2. 設定読み込み
 
-vibecorp.yml の kaizen セクションから設定を読み込む。セクションが存在しない場合はデフォルト値を使用する。
+vibecorp.yml の diagnose セクションから設定を読み込む。セクションが存在しない場合はデフォルト値を使用する。
 
 | 設定キー | デフォルト値 | 説明 |
 |---------|------------|------|
@@ -169,13 +169,13 @@ SM が「除外」と判定した候補はリストから除外する。
 gh issue list --label "diagnose" --state open --json number --jq 'length'
 ```
 
-当日起票済みの kaizen Issue 数を確認する:
+当日起票済みの diagnose Issue 数を確認する:
 
 ```bash
 gh issue list --label "diagnose" --state all --json createdAt --jq '[.[] | select(.createdAt | startswith("'$(date -u +%Y-%m-%d)'"))] | length'
 ```
 
-- オープン中の kaizen Issue 数 + 今回起票予定数が `max_issues_per_run` を超える場合、超過分を候補から除外する
+- オープン中の diagnose Issue 数 + 今回起票予定数が `max_issues_per_run` を超える場合、超過分を候補から除外する
 - 当日起票済み + 今回起票予定数が `max_issues_per_day` を超える場合、超過分を候補から除外する
 
 ### 8. ユーザーへ候補一覧提示
