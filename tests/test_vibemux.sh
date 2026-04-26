@@ -178,18 +178,18 @@ fi
 
 desc="new with missing left pane command shows error"
 output=$(unset TMUX; VIBEMUX_PANE_LEFT=nonexistent_cmd_xyz "$VIBEMUX" new testsession 2>&1) || true
-if echo "$output" | grep -qE "command not found"; then
+if echo "$output" | grep -q "set by VIBEMUX_PANE_LEFT"; then
   echo "  PASS: $desc"
   ((passed++))
 else
-  echo "  FAIL: $desc (expected 'command not found' in output)"
+  echo "  FAIL: $desc (expected 'set by VIBEMUX_PANE_LEFT' in output)"
   ((failed++))
 fi
 
 desc="new with empty left pane does not show command not found"
 output=$(unset TMUX; VIBEMUX_PANE_LEFT="" "$VIBEMUX" new testsession 2>&1) || true
-if echo "$output" | grep -q "command not found"; then
-  echo "  FAIL: $desc (got command not found error for empty pane)"
+if echo "$output" | grep -q "set by VIBEMUX_PANE"; then
+  echo "  FAIL: $desc (got check_command error for empty pane)"
   ((failed++))
 else
   echo "  PASS: $desc"
@@ -209,11 +209,11 @@ fi
 
 desc="new with missing right pane command shows error"
 output=$(unset TMUX; VIBEMUX_PANE_LEFT=bash VIBEMUX_PANE_RIGHT=nonexistent_cmd_xyz "$VIBEMUX" new testsession 2>&1) || true
-if echo "$output" | grep -qE "command not found"; then
+if echo "$output" | grep -q "set by VIBEMUX_PANE_RIGHT"; then
   echo "  PASS: $desc"
   ((passed++))
 else
-  echo "  FAIL: $desc (expected 'command not found' in output)"
+  echo "  FAIL: $desc (expected 'set by VIBEMUX_PANE_RIGHT' in output)"
   ((failed++))
 fi
 echo
